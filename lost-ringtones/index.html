@@ -1,0 +1,838 @@
+<!doctype html>
+<!-- Lost Ringtones, 2026. Copyright Iqrar Rizvi. All rights reserved. AI-assisted and AI-generated art: concept and direction by Iqrar Rizvi, code and sound by Claude. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500&display=swap" rel="stylesheet">
+<title>Lost Ringtones</title>
+<style>
+  :root { --page: #e9e5dc; --bar-bg: rgba(24, 14, 30, .8); --bar-fg: #f3e9d8; --bar-line: rgba(255, 255, 255, .16); --hover: rgba(255, 255, 255, .12); --panel: #1b1022; --panel-fg: #eee4d4; --accent: #ffc27a; }
+  html, body { margin: 0; height: 100%; background: var(--page); overflow: hidden; }
+  canvas { display: block; width: 100vw; height: 100vh; touch-action: none; }
+  .bar {
+    position: fixed; left: 50%; bottom: 14px; display: flex; gap: 4px; padding: 4px; border-radius: 999px;
+    background: var(--bar-bg); border: 1px solid var(--bar-line); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    transform: translate(-50%, 160%); opacity: 1; transition: transform .9s cubic-bezier(.2, .8, .2, 1), opacity .8s;
+  }
+  .bar.up { transform: translate(-50%, 0); }
+  .bar button {
+    width: 36px; height: 36px; border-radius: 50%; border: 0; background: transparent; color: var(--bar-fg);
+    cursor: pointer; display: grid; place-items: center; padding: 0;
+  }
+  .bar button:hover, .bar button:focus-visible { background: var(--hover); outline: none; }
+  .bar button.primary { background: var(--accent); color: #2a1424; }
+  .bar button.on { background: var(--hover); box-shadow: inset 0 0 0 1.5px var(--accent); }
+  .bar button.primary:hover { filter: brightness(1.08); }
+  .bar button:disabled { opacity: .35; cursor: default; }
+  .tab {
+    position: fixed; left: 50%; bottom: 0; z-index: 3; width: 40px; height: 15px; padding: 0; border: 0; border-radius: 10px 10px 0 0; cursor: pointer; transform: translateX(-50%);
+    background: var(--bar-bg); color: var(--bar-fg); display: grid; place-items: center; opacity: .5; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    transition: bottom .9s cubic-bezier(.2, .8, .2, 1), opacity .4s, border-radius .4s;
+  }
+  .tab:hover, .tab:focus-visible { opacity: 1; outline: none; }
+  .tab.up { bottom: 59px; opacity: .6; border-radius: 10px 10px 0 0; }
+  .tab svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .bar svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .speed {
+    position: fixed; left: 50%; bottom: 82px; z-index: 4; display: flex; align-items: center; gap: 8px; max-width: calc(100vw - 24px); box-sizing: border-box;
+    padding: 6px 10px; border-radius: 999px; background: var(--bar-bg); color: var(--bar-fg); border: 1px solid var(--bar-line);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); font: 13px/1 system-ui, -apple-system, "Segoe UI", sans-serif;
+    opacity: 0; pointer-events: none; transform: translate(-50%, 10px); transition: opacity .25s, transform .3s cubic-bezier(.2, .8, .2, 1);
+  }
+  .speed.open { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
+  .speedVal { min-width: 46px; text-align: center; font-weight: 600; font-size: 14px; }
+  .speed input { width: 110px; accent-color: var(--accent); }
+  .chips { display: flex; gap: 4px; flex-wrap: wrap; }
+  .chips button { border: 0; background: var(--hover); color: inherit; cursor: pointer; font: inherit; padding: 5px 8px; border-radius: 999px; font-size: 12px; }
+  .chips button.on { box-shadow: inset 0 0 0 1.5px var(--accent); }
+  .chips button:hover, .chips button:focus-visible { filter: brightness(1.25); outline: none; }
+  @media (max-width: 560px) { .speed { flex-wrap: wrap; justify-content: center; border-radius: 18px; } }
+  .clock {
+    position: fixed; right: 18px; top: 44px; color: #3a2f26; font: 500 15px/1 ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace; letter-spacing: .06em;
+    opacity: .8; text-shadow: 0 1px 6px rgba(255, 255, 255, .35); pointer-events: none; font-variant-numeric: tabular-nums; text-align: right;
+  }
+  .clock #wx { margin-top: 6px; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; opacity: .7; }
+  .info {
+    position: fixed; left: 16px; top: 50%; --ty: -50%; width: max-content; max-width: calc(100vw - 32px); z-index: 5;   /* the box is as wide as the one-line subtitle */
+    transform: translate(calc(-100% - 28px), var(--ty)); visibility: hidden; transition: transform .55s cubic-bezier(.2, .8, .2, 1), visibility 0s .55s;
+  }
+  .info.moved { --ty: 0px; }
+  .info.open { transform: translate(0, var(--ty)); visibility: visible; transition: transform .55s cubic-bezier(.2, .8, .2, 1), visibility 0s; }
+  .info { --pbg: rgba(16, 12, 24, .96); --pfg: #fbf6ec; --pline: rgba(255, 255, 255, .14); --phover: rgba(255, 255, 255, .16); }
+  .info.light { --pbg: #ffffff; --pfg: #0b0810; --pline: rgba(0, 0, 0, .28); --phover: rgba(0, 0, 0, .1); }
+  .info.light .sheet { font-weight: 600; box-shadow: 0 8px 26px rgba(0, 0, 0, .22); }
+  .info.light .sheet .sub, .info.light .sheet .credit, .info.light .sheet .small { opacity: 1; color: #2c2636; }
+  .info.light .sheet.spec .row b { opacity: 1; color: #4a4259; }
+  .sheet {
+    position: relative; box-sizing: border-box; padding: 14px 15px 12px; border-radius: 13px; background: var(--pbg); color: var(--pfg); border: 1px solid var(--pline);
+    font: 500 14.5px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; box-shadow: 0 10px 32px rgba(0, 0, 0, .3);
+  }
+  .sheet h2, .sheet h3 { font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif; }
+  .sheet h2 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: .02em; line-height: 1.1; padding-right: 54px; }
+  .sheet p { margin: 7px 0 0; width: 0; min-width: 100%; }   /* the paragraphs wrap to the width the subtitle sets */
+  .sheet .sub { margin-top: 3px; opacity: .92; font-family: "Cormorant Garamond", Georgia, serif; font-style: italic; font-weight: 600; font-size: 16.5px; white-space: nowrap; width: auto; min-width: 0; }
+  .sheet .credit { font-size: 13px; opacity: .9; }
+  .sheet .small { font-size: 9px; letter-spacing: .14em; text-transform: uppercase; opacity: .75; margin-top: 9px; }
+  .info { cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+  .info.drag { cursor: grabbing; }
+  .sheet.spec { margin-top: 8px; display: none; }
+  .sheet.spec.on { display: block; }
+  .sheet.spec h3 { margin: 0; font-size: 22px; font-weight: 600; padding-right: 30px; letter-spacing: .02em; line-height: 1.1; }
+  .sheet.spec .row { margin: 5px 0 0; width: 0; min-width: 100%; }
+  .sheet.spec .row b { font-weight: 700; opacity: .8; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; display: block; }
+  @media (max-width: 420px) { .info { width: calc(100vw - 32px); } .sheet .sub { white-space: normal; width: 0; min-width: 100%; } }
+  .sheet .close { position: absolute; top: 3px; right: 3px; width: 26px; height: 26px; border-radius: 50%; border: 0; background: transparent; color: inherit; cursor: pointer; font-size: 16px; }
+  .sheet .close:hover, .sheet .close:focus-visible { background: var(--phover); outline: none; }
+  .sheet .theme { right: 31px; display: grid; place-items: center; padding: 0; }
+  .sheet .theme svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+  @media (prefers-reduced-motion: reduce) { .bar, .tab, .info, .info.open, .clock { transition-duration: .01s; } }
+</style>
+</head>
+<body>
+<canvas id="c" role="img" aria-label="A quiet white art gallery wall of eighty-four old phones, from 1983 to today, in clear glass cases, in four sections like an orchestra. Tap a phone to charge it; every two taps it plays one more round of its own ringtone. Charge enough of them and the hall plays as a symphony. Space pauses, M changes the mode, V changes the volume, S saves."></canvas>
+<div class="clock"><div id="ck"></div><div id="wx"></div></div>
+<button class="tab" id="barTab" type="button" aria-label="Show the controls"></button>
+<div class="bar" id="bar" role="toolbar" aria-label="Controls">
+  <button id="infoBtn" type="button" aria-label="About this piece" title="About this piece (I)"></button>
+  <button id="restartBtn" type="button" aria-label="Back to a dark hall" title="Back to a dark hall (R)"></button>
+  <button id="modeBtn" class="primary" type="button" aria-label="Start" title="Start (Space)"></button>
+  <button id="styleBtn" type="button" aria-label="Mode: charge" title="Mode: charge (M)"></button>
+  <button id="soundBtn" type="button" aria-label="Sound: soft" title="Sound: soft (V)"></button>
+  <button id="speedBtn" type="button" aria-label="Tempo: 1x" title="Tempo" aria-expanded="false"></button>
+</div>
+<div class="speed" id="speedPop" role="group" aria-label="Tempo" aria-hidden="true">
+  <span class="speedVal" id="speedVal">1&times;</span>
+  <input id="spRange" type="range" min="0" max="1000" step="1" value="500" aria-label="Tempo">
+  <div class="chips" id="spChips"></div>
+</div>
+<aside class="info" id="info" role="dialog" aria-labelledby="infoTitle" aria-hidden="true">
+  <div class="sheet">
+    <button class="close theme" id="themeBtn" type="button" aria-label="Light mode" title="Light mode"></button>
+    <button class="close" id="infoClose" type="button" aria-label="Close">&times;</button>
+    <h2 id="infoTitle">Lost Tones</h2>
+    <p class="sub">When old phones desire to hum and live.</p>
+    <p>Tap a phone to charge it. Every two taps, one more round. Tap its small bar to learn about it.</p>
+    <p class="credit">Idea and direction by Iqrar Rizvi. Code and sound by Claude.</p>
+    <p class="small">AI-assisted and AI-generated art.</p>
+  </div>
+  <div class="sheet spec" id="spec" aria-live="polite">
+    <button class="close" id="specClose" type="button" aria-label="Close the phone details">&times;</button>
+    <h3 id="spName"></h3>
+    <p class="sub" id="spSub"></p>
+    <div class="row" id="spRows"></div>
+  </div>
+</aside>
+
+<script>
+'use strict';
+/* ---------- constants ---------- */
+const N = 84;                                   // eighty-four phones: bells 14, beepers 28, music boxes 28, low buzzers 14
+const SEC_END = [14, 42, 70, 84], secOf = i => SEC_END.findIndex(e => i < e);
+const CAP = 16;                                 // most rounds a phone can hold
+const BPM = 76;
+const ROOT = 293.66;                            // D4
+const DIA = [0, 2, 4, 5, 7, 9, 11];             // D major, so the tunes mostly agree when they play together
+const LEVELS = [['soft', 1.0], ['quiet', 0.4], ['mute', 0]];
+const VG = 1.6;                                // loudness of one phone
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const MOTION = reduceMotion ? 0.3 : 1;
+const $ = id => document.getElementById(id);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const rgba = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+const noteFreq = (deg, oct) => ROOT * Math.pow(2, (DIA[deg - 1] + 12 * oct) / 12);
+
+// the four sections, top row to bottom: glow colour, register shift (octaves) and the voices its phones can have
+const SECS = [
+  { name: 'bells',   acc: [159, 216, 255], dk: [60, 125, 175], base: 1,  vol: 0.55, voices: [0, 7],       screen: 'ice-blue' },
+  { name: 'beepers', acc: [166, 240, 176], dk: [55, 145, 75],  base: 0,  vol: 0.5,  voices: [1, 4, 5],    screen: 'green' },
+  { name: 'boxes',   acc: [255, 207, 122], dk: [190, 125, 25], base: 0,  vol: 0.8,  voices: [2, 6, 7, 8], screen: 'amber' },
+  { name: 'low',     acc: [255, 159, 184], dk: [195, 65, 105], base: -1, vol: 0.9 + 0.1, voices: [3, 8],  screen: 'rose' }
+];
+const SEC_ORDER = [3, 2, 1, 0];                 // the conductor brings the low section in first, the bells last
+const BODIES = ['#e63946', '#2a6fdb', '#12a594', '#8e44d6', '#f28c1e', '#e83e8c', '#1f2a44', '#2ea44f', '#f5c518', '#00a6d6', '#c0392b', '#6c4bd1',
+  '#ff6f59', '#0b7285', '#d6336c', '#37b24d', '#1c7ed6', '#f08c00', '#9c36b5', '#e8e6e0', '#c9c6bf', '#16171d', '#ff8fab', '#5c7cfa'];   // 24 vivid body colours
+const NAMES = ['Aria', 'Brio', 'Cadence', 'Dune', 'Echo', 'Fable', 'Gleam', 'Halo', 'Iris', 'Juno', 'Kite', 'Lumen'];   // made-up model names
+const hex = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+const shade = (h, k) => { const c = hex(h).map(v => Math.round(clamp(v * k, 0, 255))); return `rgb(${c[0]},${c[1]},${c[2]})`; };
+const SEC_START = [0, 14, 42, 70];
+
+// the ringtones: short rings of the kind phones used to make, all made up here (no real brand's tune). Degrees of D major, "+" or "-" for an octave, ":" then the length in sixteenths; "0" is a pause. One bar is 16.
+const TUNES = [
+  { name: 'Classic double ring', notes: '5:1 6:1 5:1 6:1 5:1 6:1 0:2  5:1 6:1 5:1 6:1 5:1 6:1 0:2' },
+  { name: 'Beep beep beep',      notes: '1+:2 0:2 1+:2 0:2 1+:2 0:6' },
+  { name: 'Long beep',           notes: '5:6 0:2 5:6 0:2' },
+  { name: 'Pager chirp',         notes: '3+:1 1+:1 3+:1 1+:1 0:12' },
+  { name: 'Rising beeps',        notes: '1:2 3:2 5:2 1+:2 0:8' },
+  { name: 'Falling beeps',       notes: '1+:2 5:2 3:2 1:2 0:8' },
+  { name: 'Warble',              notes: '5:2 3:2 5:2 3:2 5:2 3:2 0:4' },
+  { name: 'Tri-tone',            notes: '5:2 1+:2 3+:2 0:2 5:2 1+:2 3+:2 0:2' },
+  { name: 'Chirp pair',          notes: '1+:1 3+:1 0:2 1+:1 3+:1 0:2 1+:1 3+:1 0:6' },
+  { name: 'Ding-dong',           notes: '3+:4 1+:4 0:8' },
+  { name: 'Stair-step',          notes: '1:1 2:1 3:1 4:1 5:1 6:1 7:1 1+:1 0:8' },
+  { name: 'Quick trill',         notes: '6:1 7:1 6:1 7:1 6:1 7:1 6:1 7:1 0:8' },
+  { name: 'Bounce',              notes: '1:2 5:1 0:1 1:2 5:1 0:1 3:2 5:2 0:4' },
+  { name: 'Jingle-jangle',       notes: '5:2 1+:2 5:2 3+:2 5:2 1+:2 5:2 3+:2  6:2 2+:2 6:2 4+:2 5:4 0:4' },
+  { name: 'Disco ring',          notes: '1:2 0:1 1:1 5:2 0:1 5:1 3+:2 0:1 3+:1 1+:4' },
+  { name: 'Arpeggio ring',       notes: '1:1 3:1 5:1 1+:1 3+:1 1+:1 5:1 3:1 1:1 3:1 5:1 1+:1 3+:1 1+:1 5:1 3:1' },
+  { name: 'Cuckoo',              notes: '3+:3 1+:5 0:8' },
+  { name: 'Marching beeps',      notes: '1:2 0:2 1:2 0:2 5:2 0:2 5:2 0:2' },
+  { name: 'Siren',               notes: '5:2 3+:2 5:2 3+:2 5:2 3+:2 5:2 3+:2' },
+  { name: 'Sparkle',             notes: '5:1 1+:1 3+:1 5+:1 5:1 1+:1 3+:1 5+:1 0:8' },
+  { name: 'Slow chime',          notes: '1+:4 5:4 3:4 5:4' },
+  { name: 'Bubble',              notes: '3:1 5:1 3:1 5:1 1+:2 0:2 3:1 5:1 3:1 5:1 1+:2 0:2' },
+  { name: 'Pulse',               notes: '1:1 0:1 1:1 0:1 1:1 0:1 3:1 5:1 1+:2 0:6' },
+  { name: 'Rolling thirds',      notes: '1:1 3:1 2:1 4:1 3:1 5:1 4:1 6:1 5:1 7:1 6:1 1+:1 7:1 2+:1 1+:1 3+:1' },
+  { name: 'Echo ping',           notes: '5+:2 0:2 5:1 0:1 5+:2 0:2 5:1 0:1 0:4' },
+  { name: 'Marimba loop',        notes: '1+:2 5:2 3:2 5:2 1+:2 5:2 3:2 5:2' },
+  { name: 'Soft ping',           notes: '3+:2 0:6 1+:2 0:6' },
+  { name: 'Reflection',          notes: '5:2 1+:2 3+:2 1+:2 5:2 3:2 1:4' },
+  { name: 'Tri-ping',            notes: '1+:1 0:1 3+:1 0:1 5+:1 0:11' },
+  { name: 'Sonar',               notes: '1+:2 0:14' },
+  { name: 'Crystal',             notes: '5:1 3+:1 5+:1 3+:1 5:1 3+:1 5+:1 3+:1 1+:8' },
+  { name: 'Cascade',             notes: '5+:1 3+:1 1+:1 5:1 3:1 1:1 0:10' },
+  { name: 'Heartbeat',           notes: '1:2 0:1 1:2 0:11' },
+  // in the feel of famous phone sounds (a rhythm, a gesture, a voice), never a copy of any real tune
+  { name: 'Waltz in three',      notes: '3+:2 1+:2 5:2  3+:2 1+:2 5:2  6:2 5:2' },
+  { name: 'Hello pair',          notes: '3:2 5:4 0:2 3:2 5:4 0:2' },
+  { name: 'Marimba rise',        notes: '1:2 3:2 5:2 3:2 1+:2 5:2 3+:2 1+:2' },
+  { name: 'Horizon swell',       notes: '1:3 5:3 1+:3 3+:3 5+:4' },
+  { name: 'Telephone bell',      notes: '1+:1 5:1 1+:1 5:1 1+:1 5:1 1+:1 5:1 1+:1 5:1 1+:1 5:1 0:4' },
+  { name: 'Digital melody',      notes: '3:2 5:2 6:2 5:2 3:2 5:2 1+:4' },
+  { name: 'Wake-up call',        notes: '1+:2 0:2 1+:2 0:2 1+:2 0:2 5:4' },
+  { name: 'Flip-flop chirp',     notes: '1+:1 5:1 1+:1 5:1 0:4 3+:1 3:1 3+:1 3:1 0:4' }
+];
+
+/* a ring that does not just repeat: four bars that answer each other and settle on a long held note */
+function longForm(b) {
+  const secs = Math.max(1, Math.floor(4 / b.nb)), notes = [], step = (n, k) => { const idx = (n.deg - 1) + 7 * n.oct + k; n.deg = ((idx % 7) + 7) % 7 + 1; n.oct = Math.floor(idx / 7); };
+  for (let k = 0; k < secs; k++) {
+    const off = k * b.nb * 16;
+    b.notes.forEach(n => {
+      const c = { ...n, at: n.at + off, vel: 1 };
+      if (k % 4 === 1) step(c, 2); else if (k % 4 === 3) step(c, -2);
+      notes.push(c);
+      if (k % 4 === 2 && n.len >= 2 && n.at + 3 < b.nb * 16) notes.push({ ...c, at: c.at + 3, len: 1, vel: 0.35 });
+    });
+  }
+  const keep = notes.filter(n => n.at < 56), mid = Math.round(keep.reduce((a, n) => a + n.oct, 0) / Math.max(1, keep.length));
+  keep.push({ at: 56, deg: 1, oct: mid, len: 8, vel: 0.9 });
+  return { name: b.name, nb: 4, notes: keep, minO: Math.min(...keep.map(n => n.oct)), maxO: Math.max(...keep.map(n => n.oct)) };
+}
+
+/* the riff engine: every phone remixes its base ring a little differently, so no two sound quite alike */
+const OPS = ['a step up', 'a step down', 'reversed', 'echoes', 'grace notes', 'octave hops', 'stutter'];
+function remixOf(t, seed) {
+  const R = rngSeed(seed * 977 + 5), total = t.nb * 16, notes = t.notes.map(n => ({ ...n, vel: 1 })), ops = [];
+  const stepDeg = (n, k) => { const idx = (n.deg - 1) + 7 * n.oct + k; n.deg = ((idx % 7) + 7) % 7 + 1; n.oct = Math.floor(idx / 7); };
+  const picks = []; const k = 1 + Math.floor(R() * 3); while (picks.length < k) { const o = Math.floor(R() * OPS.length); if (!picks.includes(o)) picks.push(o); }
+  picks.sort((a, b) => a - b).forEach(o => {
+    ops.push(OPS[o]);
+    if (o === 0) notes.forEach(n => stepDeg(n, 1 + Math.floor(R() * 2)));
+    else if (o === 1) notes.forEach(n => stepDeg(n, -1 - Math.floor(R() * 2)));
+    else if (o === 2) notes.forEach(n => { n.at = total - n.at - n.len; });
+    else if (o === 3) notes.slice().forEach(n => { const at = n.at + 3; if (at < total && n.len >= 2 && !notes.some(m => m.at === at)) notes.push({ at, deg: n.deg, oct: n.oct, len: 1, vel: 0.35 }); });
+    else if (o === 4) notes.slice().forEach((n, i) => { if (i % 2 === 0 && n.at >= 1 && !notes.some(m => m.at <= n.at - 1 && m.at + m.len > n.at - 1)) { const g = { at: n.at - 1, deg: n.deg, oct: n.oct, len: 1, vel: 0.6 }; stepDeg(g, -1); notes.push(g); } });
+    else if (o === 5) notes.forEach((n, i) => { if (i % 2) n.oct += 1; });
+    else if (o === 6) notes.slice().forEach(n => { if (n.len >= 4) { const h = Math.floor(n.len / 2); n.len = h; notes.push({ at: n.at + h, deg: n.deg, oct: n.oct, len: h, vel: 0.8 }); } });
+  });
+  notes.sort((a, b) => a.at - b.at);
+  return { notes, ops, minO: Math.min(...notes.map(n => n.oct)), maxO: Math.max(...notes.map(n => n.oct)) };
+}
+function parseTune(t) {
+  let at = 0, minO = 9, maxO = -9; const notes = [];
+  t.notes.split(/[\s|]+/).filter(Boolean).forEach(tok => {
+    const m = /^(\d)([+-]*):(\d+)$/.exec(tok), deg = +m[1], len = +m[3], oct = (m[2].split('+').length - 1) - (m[2].split('-').length - 1);
+    if (deg) { notes.push({ at, deg, oct, len }); minO = Math.min(minO, oct); maxO = Math.max(maxO, oct); }
+    at += len;
+  });
+  return { name: t.name, by: t.by, notes, minO, maxO, nb: Math.max(1, Math.ceil(at / 16)) };
+}
+const TL = TUNES.map(parseTune);
+
+const ARCH = [
+  { y: 1983, name: 'Brick', bw: 0.5, top: -0.72, bot: 0.52, draw() { ant(0.14, -0.52, 0.2, 'stub'); body(-0.24, -0.52, 0.48, 1.04, 0.05); screen(-0.17, -0.42, 0.34, 0.09, 'led', 0.01); keys(-0.18, -0.22, 3, 5, 0.1, 0.07, 0.035); side(0.24, -0.2, 0.03, 0.14); } },
+  { y: 1986, name: 'Handset slab', bw: 0.4, top: -0.82, bot: 0.5, draw() { ant(-0.12, -0.5, 0.32, 'whip'); body(-0.2, -0.5, 0.4, 1.0, 0.04); ctx.fillStyle = 'rgba(0,0,0,.4)'; for (let k = 0; k < 3; k++) ctx.fillRect(-0.08, -0.46 + k * 0.025, 0.16, 0.012); screen(-0.14, -0.38, 0.28, 0.08, 'led', 0.01); keys(-0.15, -0.2, 3, 4, 0.08, 0.06, 0.04); } },
+  { y: 1988, name: 'Flap brick', bw: 0.42, top: -0.66, bot: 0.5, draw() { ant(0.12, -0.5, 0.16, 'duck'); body(-0.21, -0.5, 0.42, 1.0, 0.05); screen(-0.15, -0.4, 0.3, 0.1, 'led', 0.01); keys(-0.15, -0.22, 3, 2, 0.09, 0.06, 0.04); body(-0.21, -0.02, 0.42, 0.52, 0.05, cur.body2); hinge(-0.02); ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fillRect(-0.05, 0.42, 0.1, 0.02); } },
+  { y: 1991, name: 'Slim bar', bw: 0.32, top: -0.73, bot: 0.45, draw() { ant(0.1, -0.45, 0.28, 'whip'); body(-0.16, -0.45, 0.32, 0.9, 0.07); screen(-0.11, -0.36, 0.22, 0.16, 'lcd'); keys(-0.115, -0.14, 3, 4, 0.07, 0.05, 0.04); } },
+  { y: 1993, name: 'Big-key bar', bw: 0.38, top: -0.6, bot: 0.48, draw() { ant(-0.1, -0.48, 0.12, 'duck'); body(-0.19, -0.48, 0.38, 0.96, 0.1); screen(-0.13, -0.4, 0.26, 0.18, 'lcd'); keys(-0.13, -0.16, 3, 4, 0.08, 0.06, 0.05); } },
+  { y: 1995, name: 'Candy bar', bw: 0.3, top: -0.52, bot: 0.4, draw() { ant(0.08, -0.4, 0.12, 'stub'); body(-0.15, -0.4, 0.3, 0.8, 0.1); screen(-0.11, -0.32, 0.22, 0.2, 'lcd'); nav(0, -0.04, 0.045); keys(-0.105, 0.06, 3, 3, 0.065, 0.045, 0.04); } },
+  { y: 1996, name: 'Flip phone', bw: 0.32, top: -0.8, bot: 0.48, draw() { ant(0.1, -0.56, 0.24, 'whip'); body(-0.16, -0.56, 0.32, 0.52, 0.09); screen(-0.11, -0.5, 0.22, 0.28, 'lcd'); body(-0.16, -0.02, 0.32, 0.5, 0.09); hinge(-0.03); keys(-0.105, 0.06, 3, 3, 0.065, 0.05, 0.04); } },
+  { y: 1997, name: 'Pager', bw: 0.6, top: -0.18, bot: 0.22, draw() { body(-0.3, -0.18, 0.6, 0.36, 0.06); screen(-0.25, -0.12, 0.36, 0.14, 'lcd'); keys(0.16, -0.12, 1, 3, 0.08, 0.04, 0.02); keys(-0.25, 0.04, 4, 1, 0.07, 0.04, 0.02); body(-0.3, 0.18, 0.6, 0.04, 0.02, cur.body2); } },
+  { y: 1998, name: 'Round candy bar', bw: 0.3, top: -0.4, bot: 0.4, draw() { body(-0.15, -0.4, 0.3, 0.8, 0.15); screen(-0.1, -0.32, 0.2, 0.18, 'col', 0.04); nav(0, -0.04, 0.06); keys(-0.105, 0.05, 3, 3, 0.065, 0.045, 0.04); } },
+  { y: 1999, name: 'Sliding cover', bw: 0.32, top: -0.5, bot: 0.52, draw() { body(-0.14, 0.18, 0.28, 0.34, 0.05, cur.body2); keys(-0.1, 0.24, 3, 2, 0.06, 0.045, 0.035); body(-0.16, -0.5, 0.32, 0.74, 0.1); screen(-0.12, -0.42, 0.24, 0.26, 'col'); nav(0, 0.14, 0.04); } },
+  { y: 2000, name: 'Egg', bw: 0.34, top: -0.4, bot: 0.4, draw() { body(-0.17, -0.4, 0.34, 0.8, 0.17); screen(-0.1, -0.3, 0.2, 0.2, 'col', 0.1); keys(-0.1, 0.02, 3, 3, 0.06, 0.05, 0.04); } },
+  { y: 2001, name: 'Swivel', bw: 0.56, top: -0.62, bot: 0.46, draw() { body(-0.15, 0, 0.3, 0.46, 0.07); keys(-0.1, 0.08, 3, 3, 0.065, 0.045, 0.035); ctx.save(); ctx.translate(-0.13, 0); ctx.rotate(-0.5); body(0, -0.48, 0.3, 0.48, 0.07); screen(0.04, -0.42, 0.22, 0.3, 'col'); ctx.restore(); } },
+  { y: 2002, name: 'Colour flip', bw: 0.34, top: -0.64, bot: 0.46, draw() { ant(0.1, -0.54, 0.1, 'stub'); body(-0.17, -0.54, 0.34, 0.5, 0.1); screen(-0.12, -0.48, 0.24, 0.34, 'col'); body(-0.17, -0.02, 0.34, 0.48, 0.1); hinge(-0.03); nav(0, 0.1, 0.04); keys(-0.11, 0.17, 3, 2, 0.07, 0.045, 0.03); } },
+  { y: 2003, name: 'Camera bar', bw: 0.32, top: -0.42, bot: 0.42, draw() { body(-0.16, -0.42, 0.32, 0.84, 0.09); lens(0.1, -0.38, 0.018); screen(-0.12, -0.34, 0.24, 0.3, 'col'); nav(0, 0.06, 0.05); keys(-0.11, 0.14, 3, 2, 0.07, 0.045, 0.03); } },
+  { y: 2004, name: 'Thin flip', bw: 0.34, top: -0.5, bot: 0.48, draw() { body(-0.17, -0.5, 0.34, 0.48, 0.07); screen(-0.13, -0.44, 0.26, 0.32, 'col'); body(-0.17, 0, 0.34, 0.48, 0.07); hinge(-0.01); ctx.fillStyle = 'rgba(255,255,255,.25)'; rrect(-0.14, 0.04, 0.28, 0.4, 0.03); ctx.fill(); keys(-0.13, 0.06, 3, 4, 0.08, 0.075, 0.02); } },
+  { y: 2005, name: 'Music slider', bw: 0.36, top: -0.5, bot: 0.52, draw() { body(-0.15, 0.2, 0.3, 0.32, 0.05, cur.body2); keys(-0.11, 0.26, 3, 2, 0.07, 0.045, 0.03); body(-0.17, -0.5, 0.34, 0.74, 0.1); screen(-0.13, -0.44, 0.26, 0.28, 'col'); nav(0, 0.1, 0.05); side(0.17, -0.2, 0.025, 0.1); } },
+  { y: 2006, name: 'Messenger', bw: 0.58, top: -0.34, bot: 0.34, draw() { body(-0.29, -0.34, 0.58, 0.68, 0.08); screen(-0.22, -0.28, 0.44, 0.22, 'col'); nav(0, 0, 0.028); keys(-0.255, 0.05, 10, 3, 0.04, 0.045, 0.012); } },
+  { y: 2007, name: 'First touch slab', bw: 0.34, top: -0.4, bot: 0.4, draw() { body(-0.17, -0.4, 0.34, 0.8, 0.07); screen(-0.15, -0.3, 0.3, 0.5, 'touch', 0.02); ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fillRect(-0.05, -0.365, 0.1, 0.012); lens(0.1, -0.37, 0.012); ctx.beginPath(); ctx.arc(0, 0.31, 0.03, 0, 6.2832); ctx.strokeStyle = 'rgba(255,255,255,.45)'; ctx.lineWidth = 0.01; ctx.stroke(); } },
+  { y: 2008, name: 'Touch and keys', bw: 0.4, top: -0.5, bot: 0.5, draw() { body(-0.2, 0.12, 0.4, 0.38, 0.05, cur.body2); keys(-0.17, 0.16, 10, 3, 0.033, 0.04, 0.01); body(-0.17, -0.5, 0.34, 0.62, 0.07); screen(-0.15, -0.44, 0.3, 0.42, 'touch'); ctx.beginPath(); ctx.arc(0, 0.07, 0.02, 0, 6.2832); ctx.strokeStyle = 'rgba(255,255,255,.4)'; ctx.lineWidth = 0.008; ctx.stroke(); } },
+  { y: 2009, name: 'Soft-key slab', bw: 0.36, top: -0.42, bot: 0.42, draw() { body(-0.18, -0.42, 0.36, 0.84, 0.06); screen(-0.16, -0.34, 0.32, 0.5, 'touch'); keys(-0.14, 0.22, 4, 1, 0.055, 0.04, 0.02); nav(0, 0.35, 0.022); lens(0.1, -0.38, 0.012); } },
+  { y: 2010, name: 'Big-screen slab', bw: 0.4, top: -0.44, bot: 0.44, draw() { body(-0.2, -0.44, 0.4, 0.88, 0.05); screen(-0.18, -0.36, 0.36, 0.6, 'touch'); lens(0.12, -0.4, 0.012); ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fillRect(-0.05, -0.405, 0.1, 0.012); keys(-0.14, 0.32, 1, 1, 0.06, 0.04, 0); keys(-0.02, 0.32, 1, 1, 0.04, 0.04, 0); keys(0.08, 0.32, 1, 1, 0.06, 0.04, 0); } },
+  { y: 2011, name: 'Metal slab', bw: 0.4, top: -0.44, bot: 0.44, draw() { side(-0.19, -0.25, 0.022, 0.2); side(0.19, -0.2, 0.022, 0.12); body(-0.19, -0.44, 0.38, 0.88, 0.06); screen(-0.17, -0.36, 0.34, 0.7, 'touch'); lens(0.09, -0.4, 0.012); } },
+  { y: 2013, name: 'Phablet', bw: 0.46, top: -0.46, bot: 0.46, draw() { body(-0.23, -0.46, 0.46, 0.92, 0.05); screen(-0.21, -0.38, 0.42, 0.76, 'touch', 0.02); ctx.fillStyle = 'rgba(255,255,255,.35)'; rrect(-0.06, 0.405, 0.12, 0.03, 0.015); ctx.fill(); } },
+  { y: 2014, name: 'Curved slab', bw: 0.4, top: -0.46, bot: 0.46, draw() { body(-0.2, -0.46, 0.4, 0.92, 0.14); screen(-0.17, -0.38, 0.34, 0.76, 'touch', 0.1); ctx.fillStyle = 'rgba(255,255,255,.3)'; rrect(-0.05, 0.405, 0.1, 0.028, 0.014); ctx.fill(); } },
+  { y: 2016, name: 'Dual-camera slab', bw: 0.38, top: -0.46, bot: 0.46, draw() { body(-0.19, -0.46, 0.38, 0.92, 0.08); screen(-0.17, -0.36, 0.34, 0.72, 'touch'); lens(-0.12, -0.41, 0.013); lens(-0.07, -0.41, 0.013); ctx.beginPath(); ctx.arc(0, 0.415, 0.026, 0, 6.2832); ctx.strokeStyle = 'rgba(255,255,255,.4)'; ctx.lineWidth = 0.009; ctx.stroke(); } },
+  { y: 2017, name: 'Edge-to-edge', bw: 0.36, top: -0.47, bot: 0.47, draw() { body(-0.18, -0.47, 0.36, 0.94, 0.12); screen(-0.165, -0.44, 0.33, 0.88, 'touch', 0.1); ctx.fillStyle = 'rgba(0,0,0,.55)'; rrect(-0.05, -0.43, 0.1, 0.012, 0.006); ctx.fill(); } },
+  { y: 2018, name: 'Notch phone', bw: 0.36, top: -0.47, bot: 0.47, draw() { body(-0.18, -0.47, 0.36, 0.94, 0.13); screen(-0.165, -0.44, 0.33, 0.88, 'touch', 0.11); ctx.fillStyle = '#05070a'; rrect(-0.07, -0.445, 0.14, 0.045, 0.02); ctx.fill(); side(0.18, -0.2, 0.02, 0.12); } },
+  { y: 2019, name: 'Punch-hole phone', bw: 0.36, top: -0.47, bot: 0.47, draw() { body(-0.18, -0.47, 0.36, 0.94, 0.13); screen(-0.17, -0.45, 0.34, 0.9, 'touch', 0.12); lens(0, -0.415, 0.014); side(0.18, -0.15, 0.02, 0.16); } },
+  { y: 2020, name: 'Book foldable', bw: 0.62, top: -0.42, bot: 0.42, draw() { body(-0.31, -0.42, 0.3, 0.84, 0.05); body(0.01, -0.42, 0.3, 0.84, 0.05); screen(-0.29, -0.4, 0.58, 0.8, 'touch', 0.02); ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(-0.006, -0.42, 0.012, 0.84); lens(0.25, -0.36, 0.012); } },
+  { y: 2021, name: 'Flip foldable', bw: 0.36, top: -0.46, bot: 0.46, draw() { body(-0.18, -0.46, 0.36, 0.46, 0.1); body(-0.18, 0, 0.36, 0.46, 0.1); screen(-0.165, -0.44, 0.33, 0.88, 'touch', 0.08); ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.fillRect(-0.165, -0.004, 0.33, 0.008); lens(0, -0.415, 0.013); } },
+  { y: 2022, name: 'Rugged phone', bw: 0.42, top: -0.48, bot: 0.48, draw() { body(-0.21, -0.48, 0.42, 0.96, 0.04, cur.trim); body(-0.18, -0.45, 0.36, 0.9, 0.03, cur.body); screen(-0.15, -0.36, 0.3, 0.62, 'touch'); side(0.21, -0.1, 0.03, 0.16); ctx.beginPath(); ctx.arc(0, 0.36, 0.035, 0, 6.2832); ctx.fillStyle = cur.trim; ctx.fill(); } },
+  { y: 2024, name: 'Glass slab', bw: 0.36, top: -0.47, bot: 0.47, draw() { body(-0.18, -0.47, 0.36, 0.94, 0.1); screen(-0.165, -0.45, 0.33, 0.9, 'touch', 0.09); ctx.fillStyle = '#05070a'; rrect(-0.05, -0.425, 0.1, 0.03, 0.015); ctx.fill(); side(0.18, -0.12, 0.02, 0.14); } }
+
+  ,{ y: 1984, name: 'Car handset', bw: 0.3, top: -0.5, bot: 0.7, draw() { body(-0.12, -0.5, 0.24, 1.0, 0.09); ctx.fillStyle = 'rgba(0,0,0,.35)'; rrect(-0.08, -0.47, 0.16, 0.05, 0.02); ctx.fill(); screen(-0.08, -0.38, 0.16, 0.07, 'led', 0.01); keys(-0.085, -0.24, 3, 5, 0.05, 0.05, 0.015); ctx.beginPath(); ctx.moveTo(0, 0.5); for (let k = 0; k < 5; k++) ctx.quadraticCurveTo(k % 2 ? -0.07 : 0.07, 0.54 + k * 0.04, 0, 0.58 + k * 0.04); ctx.strokeStyle = cur.body2; ctx.lineWidth = 0.025; ctx.stroke(); } }
+  ,{ y: 1989, name: 'Bag phone', bw: 0.6, top: -0.5, bot: 0.5, draw() { ant(0.26, 0.2, 0.7, 'whip'); body(-0.3, 0.2, 0.6, 0.3, 0.04, cur.body2); ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.fillRect(-0.24, 0.3, 0.3, 0.02); ctx.fillRect(-0.24, 0.36, 0.3, 0.02); body(-0.1, -0.5, 0.2, 0.74, 0.07); screen(-0.07, -0.43, 0.14, 0.07, 'led', 0.01); keys(-0.075, -0.3, 3, 4, 0.045, 0.045, 0.015); } }
+  ,{ y: 1990, name: 'Dial brick', bw: 0.44, top: -0.62, bot: 0.5, draw() { ant(0.12, -0.5, 0.12, 'duck'); body(-0.22, -0.5, 0.44, 1.0, 0.06); screen(-0.18, -0.42, 0.36, 0.14, 'led', 0.01); nav(0, -0.08, 0.1); keys(-0.12, 0.08, 3, 3, 0.07, 0.06, 0.04); } }
+  ,{ y: 1992, name: 'Wedge', bw: 0.36, top: -0.5, bot: 0.5, draw() { poly([[-0.12, -0.5], [0.12, -0.5], [0.18, 0.5], [-0.18, 0.5]]); screen(-0.09, -0.42, 0.18, 0.16, 'lcd'); keys(-0.12, -0.1, 3, 4, 0.07, 0.06, 0.03); } }
+  ,{ y: 1994, name: 'Stubby bar', bw: 0.4, top: -0.4, bot: 0.3, draw() { ant(0.1, -0.3, 0.1, 'stub'); body(-0.2, -0.3, 0.4, 0.6, 0.08); screen(-0.15, -0.24, 0.3, 0.16, 'lcd'); keys(-0.15, -0.04, 4, 3, 0.065, 0.05, 0.02); } }
+  ,{ y: 1996, name: 'Side-flip', bw: 0.34, top: -0.45, bot: 0.45, draw() { body(-0.17, -0.45, 0.34, 0.9, 0.08); screen(-0.13, -0.38, 0.26, 0.2, 'lcd'); keys(-0.13, -0.1, 3, 4, 0.07, 0.05, 0.03); body(0.0, -0.06, 0.17, 0.51, 0.05, cur.body2); ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(-0.003, -0.06, 0.006, 0.51); } }
+  ,{ y: 1997, name: 'Keyboard flip', bw: 0.32, top: -0.5, bot: 0.5, draw() { body(-0.16, -0.5, 0.32, 0.48, 0.08, cur.body2); ctx.fillStyle = 'rgba(0,0,0,.4)'; for (let k = 0; k < 4; k++) ctx.fillRect(-0.06, -0.42 + k * 0.03, 0.12, 0.01); body(-0.16, 0, 0.32, 0.5, 0.08); hinge(-0.01); screen(-0.12, 0.04, 0.24, 0.16, 'lcd'); keys(-0.12, 0.24, 4, 2, 0.05, 0.05, 0.015); } }
+  ,{ y: 1999, name: 'Barrel', bw: 0.28, top: -0.45, bot: 0.45, draw() { body(-0.14, -0.45, 0.28, 0.9, 0.14); ctx.fillStyle = 'rgba(0,0,0,.2)'; ctx.fillRect(-0.14, 0.12, 0.28, 0.01); ctx.fillRect(-0.14, 0.3, 0.28, 0.01); screen(-0.07, -0.37, 0.14, 0.14, 'lcd', 0.07); keys(-0.09, -0.12, 3, 3, 0.055, 0.045, 0.02); } }
+  ,{ y: 2001, name: 'Triangle', bw: 0.4, top: -0.4, bot: 0.4, draw() { poly([[-0.2, -0.4], [0.2, -0.4], [0.1, 0.4], [-0.1, 0.4]]); screen(-0.15, -0.34, 0.3, 0.26, 'col'); nav(0, 0.03, 0.04); keys(-0.07, 0.12, 3, 2, 0.045, 0.05, 0.015); } }
+  ,{ y: 2002, name: 'Window candy', bw: 0.34, top: -0.45, bot: 0.45, draw() { body(-0.17, -0.45, 0.34, 0.9, 0.12); screen(-0.1, -0.4, 0.2, 0.06, 'lcd', 0.02); screen(-0.13, -0.3, 0.26, 0.28, 'col'); nav(0, 0.1, 0.05); keys(-0.11, 0.18, 3, 2, 0.07, 0.045, 0.03); } }
+  ,{ y: 2003, name: 'Square QVGA', bw: 0.44, top: -0.28, bot: 0.28, draw() { body(-0.22, -0.28, 0.44, 0.56, 0.08); screen(-0.17, -0.23, 0.34, 0.28, 'col'); keys(-0.17, 0.1, 5, 2, 0.058, 0.04, 0.012); } }
+  ,{ y: 2003, name: 'Lens swivel', bw: 0.44, top: -0.42, bot: 0.42, draw() { body(-0.17, -0.42, 0.34, 0.84, 0.1); body(0.14, -0.34, 0.12, 0.2, 0.06, cur.body2); lens(0.2, -0.24, 0.05); screen(-0.13, -0.35, 0.26, 0.32, 'col'); nav(0, 0.1, 0.05); keys(-0.11, 0.2, 3, 2, 0.07, 0.04, 0.03); } }
+  ,{ y: 2004, name: 'Wrist phone', bw: 0.32, top: -0.5, bot: 0.5, draw() { body(-0.1, -0.5, 0.2, 0.36, 0.04, cur.body2); body(-0.1, 0.14, 0.2, 0.36, 0.04, cur.body2); body(-0.16, -0.16, 0.32, 0.32, 0.07); screen(-0.12, -0.12, 0.24, 0.2, 'col'); ctx.beginPath(); ctx.arc(0, 0.12, 0.012, 0, 6.2832); ctx.fillStyle = rgba(cur.S.acc, 0.2 + 0.6 * cur.glow); ctx.fill(); } }
+  ,{ y: 2005, name: 'Game slider', bw: 0.6, top: -0.2, bot: 0.2, draw() { body(-0.3, -0.2, 0.6, 0.4, 0.06); screen(-0.14, -0.16, 0.28, 0.32, 'col'); nav(-0.22, 0, 0.055); [[0.2, 0], [0.26, -0.06], [0.26, 0.06], [0.2, -0.12]].forEach(([x, y]) => nav(x, y, 0.025)); } }
+  ,{ y: 2006, name: 'Chocolate bar', bw: 0.3, top: -0.46, bot: 0.46, draw() { body(-0.15, -0.46, 0.3, 0.92, 0.04); screen(-0.12, -0.4, 0.24, 0.28, 'col', 0.02); keys(-0.12, 0, 3, 4, 0.075, 0.06, 0.012); } }
+  ,{ y: 2006, name: 'Mini slab', bw: 0.28, top: -0.32, bot: 0.32, draw() { body(-0.14, -0.32, 0.28, 0.64, 0.06); screen(-0.11, -0.27, 0.22, 0.22, 'col'); nav(0, 0.1, 0.04); keys(-0.1, 0.18, 3, 1, 0.06, 0.045, 0.02); } }
+  ,{ y: 2007, name: 'Dial phone', bw: 0.62, top: -0.31, bot: 0.31, draw() { ctx.beginPath(); ctx.arc(0, 0, 0.31, 0, 6.2832); ctx.fillStyle = cur.body; ctx.fill(); ctx.strokeStyle = 'rgba(0,0,0,.34)'; ctx.lineWidth = 0.014; ctx.stroke(); for (let k = 0; k < 10; k++) { const a = -2.4 + k * 0.5; ctx.beginPath(); ctx.arc(Math.cos(a) * 0.2, Math.sin(a) * 0.2, 0.04, 0, 6.2832); ctx.fillStyle = keyBase(); ctx.fill(); } screen(-0.09, -0.07, 0.18, 0.14, 'lcd', 0.03); } }
+  ,{ y: 2008, name: 'Square touch', bw: 0.44, top: -0.24, bot: 0.24, draw() { body(-0.22, -0.24, 0.44, 0.48, 0.05); screen(-0.19, -0.2, 0.38, 0.4, 'touch', 0.02); } }
+  ,{ y: 2009, name: 'Two-screen clam', bw: 0.36, top: -0.5, bot: 0.5, draw() { body(-0.18, -0.5, 0.36, 0.48, 0.09); screen(-0.14, -0.45, 0.28, 0.38, 'col'); body(-0.18, 0, 0.36, 0.5, 0.09); hinge(-0.01); screen(-0.14, 0.05, 0.28, 0.4, 'touch'); } }
+  ,{ y: 2012, name: 'Gaming phone', bw: 0.72, top: -0.22, bot: 0.22, draw() { body(-0.36, -0.22, 0.72, 0.44, 0.06); screen(-0.2, -0.18, 0.4, 0.36, 'touch', 0.02); nav(-0.28, 0.02, 0.06); [[0.27, 0.06], [0.31, -0.02], [0.23, -0.02], [0.27, -0.1]].forEach(([x, y]) => nav(x, y, 0.025)); } }
+  ,{ y: 2012, name: 'Rounded square', bw: 0.44, top: -0.32, bot: 0.32, draw() { body(-0.22, -0.32, 0.44, 0.64, 0.2); screen(-0.18, -0.27, 0.36, 0.42, 'touch', 0.14); ctx.fillStyle = 'rgba(255,255,255,.35)'; rrect(-0.05, 0.22, 0.1, 0.03, 0.015); ctx.fill(); } }
+  ,{ y: 2015, name: 'Micro slab', bw: 0.24, top: -0.46, bot: 0.46, draw() { body(-0.12, -0.46, 0.24, 0.92, 0.1); screen(-0.1, -0.4, 0.2, 0.8, 'touch', 0.08); } }
+  ,{ y: 2015, name: 'Clear phone', bw: 0.36, top: -0.46, bot: 0.46, draw() { body(-0.18, -0.46, 0.36, 0.92, 0.08, 'rgba(200, 225, 240, .55)'); ctx.strokeStyle = 'rgba(60,80,100,.5)'; ctx.lineWidth = 0.01; rrect(-0.14, -0.1, 0.28, 0.5, 0.03); ctx.stroke(); for (let k = 0; k < 3; k++) { ctx.beginPath(); ctx.arc(-0.08 + k * 0.08, 0.3, 0.02, 0, 6.2832); ctx.stroke(); } screen(-0.15, -0.4, 0.3, 0.3, 'touch', 0.04); } }
+  ,{ y: 2016, name: 'Module block', bw: 0.38, top: -0.46, bot: 0.46, draw() { body(-0.19, -0.46, 0.38, 0.92, 0.07); screen(-0.165, -0.4, 0.33, 0.66, 'touch'); for (let k = 0; k < 3; k++) { ctx.beginPath(); ctx.arc(-0.07 + k * 0.07, 0.36, 0.012, 0, 6.2832); ctx.fillStyle = cur.trim; ctx.fill(); } ctx.fillStyle = cur.trim; rrect(0.06, -0.44, 0.1, 0.05, 0.015); ctx.fill(); } }
+  ,{ y: 2018, name: 'Pop-up camera', bw: 0.36, top: -0.52, bot: 0.47, draw() { body(-0.05, -0.52, 0.1, 0.06, 0.015, cur.body2); body(-0.18, -0.47, 0.36, 0.94, 0.12); screen(-0.17, -0.45, 0.34, 0.9, 'touch', 0.11); } }
+  ,{ y: 2019, name: 'Wide foldable', bw: 0.68, top: -0.28, bot: 0.28, draw() { body(-0.34, -0.28, 0.68, 0.56, 0.04); screen(-0.32, -0.26, 0.64, 0.52, 'touch', 0.02); ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.fillRect(-0.004, -0.28, 0.008, 0.56); } }
+  ,{ y: 2020, name: 'Tri-fold', bw: 0.66, top: -0.4, bot: 0.4, draw() { body(-0.33, -0.4, 0.22, 0.8, 0.04); body(-0.11, -0.4, 0.22, 0.8, 0.04); body(0.11, -0.4, 0.22, 0.8, 0.04); screen(-0.32, -0.38, 0.64, 0.76, 'touch', 0.02); ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.fillRect(-0.115, -0.4, 0.008, 0.8); ctx.fillRect(0.107, -0.4, 0.008, 0.8); } }
+  ,{ y: 2022, name: 'Rollable', bw: 0.54, top: -0.45, bot: 0.45, draw() { body(-0.2, -0.45, 0.4, 0.9, 0.06); screen(-0.18, -0.4, 0.36, 0.8, 'touch'); body(0.2, -0.4, 0.07, 0.8, 0.035, cur.body2); ctx.strokeStyle = 'rgba(255,255,255,.5)'; ctx.lineWidth = 0.012; ctx.beginPath(); ctx.moveTo(0.225, -0.05); ctx.lineTo(0.245, 0); ctx.lineTo(0.225, 0.05); ctx.stroke(); } }
+  ,{ y: 2023, name: 'Metal frame', bw: 0.4, top: -0.49, bot: 0.49, draw() { body(-0.2, -0.49, 0.4, 0.98, 0.1, cur.trim); body(-0.18, -0.47, 0.36, 0.94, 0.08, cur.body); screen(-0.16, -0.43, 0.32, 0.86, 'touch', 0.07); lens(0, -0.4, 0.012); } }
+  ,{ y: 2024, name: 'Cover-screen flip', bw: 0.32, top: -0.28, bot: 0.28, draw() { body(-0.16, -0.28, 0.32, 0.56, 0.11); screen(-0.12, -0.24, 0.24, 0.22, 'touch', 0.06); lens(-0.06, 0.1, 0.03); lens(0.06, 0.1, 0.03); hinge(0.22); } }
+  ,{ y: 2024, name: 'Kid phone', bw: 0.34, top: -0.4, bot: 0.4, draw() { body(-0.17, -0.4, 0.34, 0.8, 0.17); screen(-0.12, -0.32, 0.24, 0.34, 'col', 0.08); keys(-0.12, 0.1, 3, 1, 0.07, 0.07, 0.03); keys(-0.06, 0.2, 2, 1, 0.06, 0.06, 0.04); } }
+];
+ARCH.sort((p, q) => p.y - q.y);
+const NARCH = ARCH.length, ARCH_Y = ARCH.map(m => m.y);   // sorted oldest to newest
+
+/* ---------- eras: the sound a phone had depends on when it was made ---------- */
+const eraOf = y => y <= 1995 ? 0 : y <= 1999 ? 1 : y <= 2003 ? 2 : y <= 2008 ? 3 : 4;
+const ERA_NAMES = ['Single-beeper era', 'Chirpy monophonic era', 'First polyphonic era', 'Polyphonic and true-tone era', 'Touch-screen era'];
+const ERA_VOICES = [[1], [1, 4], [5, 2, 7, 4], [0, 6, 2, 8, 7], [0, 7, 8, 6]];   // beeper; beeper and chip; tinny speaker, music box, marimba, chip; bell, flute, organ, FM; bell, marimba, organ, flute
+const ERA_TUNES = [
+  ['Classic double ring', 'Beep beep beep', 'Long beep', 'Pager chirp', 'Rising beeps', 'Falling beeps', 'Warble', 'Telephone bell', 'Wake-up call', 'Flip-flop chirp'],
+  ['Tri-tone', 'Chirp pair', 'Ding-dong', 'Stair-step', 'Quick trill', 'Bounce', 'Classic double ring', 'Rising beeps', 'Hello pair', 'Waltz in three', 'Flip-flop chirp', 'Telephone bell'],
+  ['Jingle-jangle', 'Disco ring', 'Arpeggio ring', 'Cuckoo', 'Marching beeps', 'Siren', 'Bounce', 'Tri-tone', 'Chirp pair', 'Stair-step', 'Waltz in three', 'Hello pair', 'Wake-up call'],
+  ['Sparkle', 'Slow chime', 'Bubble', 'Pulse', 'Rolling thirds', 'Echo ping', 'Jingle-jangle', 'Disco ring', 'Arpeggio ring', 'Cuckoo', 'Marimba rise', 'Digital melody', 'Horizon swell'],
+  ['Marimba loop', 'Soft ping', 'Reflection', 'Tri-ping', 'Sonar', 'Crystal', 'Cascade', 'Heartbeat', 'Slow chime', 'Bubble', 'Marimba rise', 'Horizon swell', 'Digital melody']
+];
+
+/* ---------- the phones ---------- */
+const phones = [];
+for (let i = 0; i < N; i++) {
+  const s = secOf(i), S = SECS[s];
+  const j = i - SEC_START[s], n = SEC_END[s] - SEC_START[s];                           // inside a section the phones run oldest to newest, left to right
+  const arch = clamp(Math.floor(j * NARCH / n + s * 0.9), 0, NARCH - 1), yr = ARCH_Y[arch], era = eraOf(yr);
+  const pool = ERA_TUNES[era], base = longForm(TL.find(t => t.name === pool[(i * 5 + s * 3) % pool.length])), rm = remixOf(base, i), tune = { name: base.name, nb: base.nb, notes: rm.notes, ops: rm.ops, minO: rm.minO, maxO: rm.maxO };   // each era plays the kind of tunes its phones really had
+  const vp = s === 3 ? (era === 0 ? [3] : [3, 8]) : ERA_VOICES[era], voice = vp[i % vp.length];
+  const sh = Math.max(Math.min(S.base, 2 - tune.maxO), -1 - tune.minO);   // shift the tune into the section's register, never too shrill or too low
+  const bars = Array.from({ length: tune.nb }, () => []);
+  tune.notes.forEach(n => bars[Math.floor(n.at / 16)].push([n.at % 16, noteFreq(n.deg, n.oct + sh), n.len, n.vel]));
+  const bc = BODIES[(i * 7 + 3) % 24];
+  phones.push({
+    i, s, S, tune, sh, bars, voice, era, arch, body: bc, body2: shade(bc, 0.74), lum: 0.3 * hex(bc)[0] + 0.59 * hex(bc)[1] + 0.11 * hex(bc)[2],
+    trim: BODIES[(i * 11 + 5) % 24], deco: (i * 5 + 1) % 6, vw: 0.84 + ((i * 13) % 9) / 9 * 0.36, vh: 0.92 + ((i * 17) % 7) / 7 * 0.18, flip: i % 2 ? 1 : -1, kc: (i * 3) % 3,
+    rad: 0.6 + ((i * 19) % 8) / 8 * 1.2, sz: 0.88 + ((i * 23) % 5) / 5 * 0.2, ks: 0.85 + ((i * 29) % 4) / 4 * 0.25, kt: i % 3 === 0, sb: i % 4 === 1, trimRGB: hex(BODIES[(i * 11 + 5) % 24]),
+    rank: SEC_ORDER.indexOf(s) * 1000 + (i * 37) % 97,
+    loops: 0, taps: 0, forever: false, autoOn: false, t: null, bi: 0, playEnd: 0, glow: 0, pulse: 0, hover: 0,
+    cx: 0, cy: 0, w: 0, h: 0, row: 0, pan: 0, pillY: 0, pillW: 0
+  });
+}
+(function () { const by = [...phones].sort((a, b) => a.rank - b.rank || a.i - b.i); by.forEach((p, k) => p.rank = k); })();
+let selected = null;                              // the phone whose details are showing
+
+/* ---------- audio ---------- */
+let ac = null, master, voiceIn, padGain, secNodes = [], levelIdx = 0;
+function impulse(sec, decay) {
+  const n = Math.floor(ac.sampleRate * sec), buf = ac.createBuffer(2, n, ac.sampleRate);
+  for (let ch = 0; ch < 2; ch++) { const d = buf.getChannelData(ch); for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, decay); }
+  return buf;
+}
+function initAudio() {
+  ac = new (window.AudioContext || window.webkitAudioContext)();
+  master = ac.createGain(); master.gain.value = 0;
+  const comp = ac.createDynamicsCompressor(); comp.threshold.value = -20; comp.ratio.value = 3;
+  const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 4200;
+  voiceIn = ac.createGain();
+  const dry = ac.createGain(); dry.gain.value = 0.75;
+  const conv = ac.createConvolver(); conv.buffer = impulse(3.4, 3);   // a big hall
+  const wet = ac.createGain(); wet.gain.value = 0.45;
+  voiceIn.connect(dry).connect(lp); voiceIn.connect(conv).connect(wet).connect(lp);
+  lp.connect(comp).connect(master).connect(ac.destination);
+  SECS.forEach((S, s) => {                       // one small bus per section: its level, and a soft low-pass for the beepers
+    const g = ac.createGain(); g.gain.value = S.vol;
+    if (s === 1) { const f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 1500; g.connect(f).connect(voiceIn); } else g.connect(voiceIn);
+    secNodes.push(g);
+  });
+  phones.forEach(p => { p.bus = ac.createStereoPanner ? ac.createStereoPanner() : ac.createGain(); if (p.bus.pan) p.bus.pan.value = p.pan; p.bus.connect(secNodes[p.s]); });
+  padGain = ac.createGain(); padGain.gain.value = 0;                 // the hall's own hum, which swells as the phones wake
+  [[146.83, 0], [220, 3], [293.66, -4]].forEach(([f, det]) => { const o = ac.createOscillator(); o.type = 'sine'; o.frequency.value = f; o.detune.value = det; o.connect(padGain); o.start(); });
+  padGain.connect(voiceIn);
+  window.__analyser = ac.createAnalyser(); master.connect(window.__analyser);
+  const t = ac.currentTime; master.gain.setValueAtTime(0, t); master.gain.linearRampToValueAtTime(LEVELS[levelIdx][1], t + 3);
+}
+function setLevel() {
+  if (!ac) return;
+  const t = ac.currentTime;
+  master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value, t); master.gain.setTargetAtTime(LEVELS[levelIdx][1], t, 0.15);
+}
+function tone(type, f, when, att, dur, peak, dest) {
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type = type; o.frequency.value = f;
+  g.gain.setValueAtTime(0.0001, when);
+  g.gain.exponentialRampToValueAtTime(peak, when + att);
+  g.gain.exponentialRampToValueAtTime(0.0001, when + att + dur);
+  o.connect(g).connect(dest); o.start(when); o.stop(when + att + dur + 0.05);
+}
+const VOICES = [                                  // nine old-phone voices, all made here from plain waves; the last number is how long the note lasts
+  (f, t, v, d) => { tone('sine', f, t, 0.004, 1.9, v, d); tone('sine', f * 2.76, t, 0.003, 0.5, v * 0.12, d); tone('sine', f * 5.4, t, 0.003, 0.22, v * 0.04, d); },   // 0 bell
+  (f, t, v, d) => { tone('square', f, t, 0.006, 0.2, v * 0.3, d); },                                                                                                 // 1 beeper
+  (f, t, v, d) => {                                                                                                                                                  // 2 music box (two-wave FM)
+    const c = ac.createOscillator(), m = ac.createOscillator(), mg = ac.createGain(), g = ac.createGain();
+    c.frequency.value = f; m.frequency.value = f * 2; mg.gain.setValueAtTime(f * 1.6, t); mg.gain.exponentialRampToValueAtTime(f * 0.1, t + 0.5);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.5);
+    m.connect(mg).connect(c.frequency); c.connect(g).connect(d); c.start(t); m.start(t); c.stop(t + 1.6); m.stop(t + 1.6);
+  },
+  (f, t, v, d) => { tone('triangle', f, t, 0.02, 0.9, v, d); tone('sine', f * 2, t, 0.02, 0.5, v * 0.18, d); },                                                       // 3 low buzz, warm
+  (f, t, v, d) => { tone('square', f, t, 0.004, 0.16, v * 0.16, d); tone('square', f * 1.006, t, 0.004, 0.16, v * 0.16, d); },                                         // 4 chip chirp: two squares a hair apart
+  (f, t, v, d) => {                                                                                                                                                  // 5 tinny speaker: a thin saw through a narrow band
+    const o = ac.createOscillator(), b = ac.createBiquadFilter(), g = ac.createGain();
+    o.type = 'sawtooth'; o.frequency.value = f; b.type = 'bandpass'; b.frequency.value = 1300; b.Q.value = 0.9;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v * 0.55, t + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+    o.connect(b).connect(g).connect(d); o.start(t); o.stop(t + 0.27);
+  },
+  (f, t, v, d, len) => {                                                                                                                                             // 6 toy flute: a breathy sine with a slow wobble
+    const l = Math.max(0.3, len || 0.5), o = ac.createOscillator(), lfo = ac.createOscillator(), lg = ac.createGain(), g = ac.createGain();
+    o.frequency.value = f; lfo.frequency.value = 5.2; lg.gain.value = f * 0.007; lfo.connect(lg).connect(o.frequency);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v * 0.8, t + 0.06); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.06 + l);
+    o.connect(g).connect(d); o.start(t); lfo.start(t); o.stop(t + l + 0.12); lfo.stop(t + l + 0.12);
+  },
+  (f, t, v, d) => { tone('sine', f, t, 0.003, 0.4, v, d); tone('sine', f * 4, t, 0.003, 0.08, v * 0.2, d); },                                                         // 7 marimba: a woody tap
+  (f, t, v, d, len) => { const l = Math.max(0.25, len || 0.4); tone('sine', f, t, 0.05, l, v * 0.8, d); tone('sine', f * 2, t, 0.05, l * 0.8, v * 0.2, d); }          // 8 soft organ
+];
+const VTXT = [
+  'A pure bell with a faint metal ring, slow to fade.',
+  'A soft square-wave beep, short and round.',
+  'A music-box pluck: two waves bending each other.',
+  'A warm low buzz, like a phone humming on a wooden table.',
+  'A chip-speaker chirp: two square waves a hair apart.',
+  'A thin saw wave squeezed through a tiny speaker.',
+  'A breathy toy flute with a slow wobble.',
+  'A woody tap with a bright overtone that vanishes fast.',
+  'A soft organ tone that swells a little.'
+];
+const CHIME = [[1, 0], [3, 0], [5, 0], [1, 1]];   // the start-up chime: D, F#, A, then D again, one octave up
+function chimeNote(p, n, when, v) { const [d, o] = CHIME[n % 4]; VOICES[p.voice](noteFreq(d, o + p.sh), when, v, p.bus, 0.3); }
+
+/* ---------- time and the bars ---------- */
+let running = false, started = false, mode = 'charge', speed = 1;     // mode: charge, auto, free
+let barIdx = 0, nextBar = 0, autoStart = 0, timer = 0, q = [];
+const barLen = () => 240 / BPM / speed;
+function autoCount(c) {                          // the conductor: the section brings itself in, holds, then thins out; 48 bars
+  if (c < 24) return Math.ceil(N * Math.pow((c + 1) / 24, 1.3));
+  if (c < 32) return N;
+  return Math.ceil(N * (1 - (c - 32) / 16));
+}
+function conductorBar(t, b) {                    // the auto conductor: at each bar line, bring in the phones whose turn it is
+  if (mode !== 'auto') { phones.forEach(p => p.autoOn = false); return; }
+  const nAuto = autoCount((b - autoStart) % 48);
+  phones.forEach(p => { p.autoOn = p.rank < nAuto; if (p.autoOn && p.t === null) { p.t = t; p.bi = 0; } });
+}
+function ringBar(p) {                            // every phone keeps its own clock: schedule the bar due at p.t, then decide whether it rings on
+  const t = p.t, e16 = barLen() / 16;
+  p.playEnd = Math.max(p.playEnd, t + barLen());
+  p.bars[p.bi].forEach(([slot, freq, len, vel]) => {
+    const when = t + slot * e16, v = 0.2 * VG * (slot % 4 === 0 ? 1.1 : 0.9) * vel;
+    VOICES[p.voice](freq, when, v, p.bus, len * e16 * 0.95);
+    q.push({ t: when, p, v: slot % 4 === 0 ? 1 : 0.7 });
+  });
+  p.bi = (p.bi + 1) % p.tune.nb; p.t = t + barLen();
+  if (p.bi === 0) {                              // a whole round is done: ring on while it has charge, is on free play or is with the conductor
+    if (p.autoOn || (mode === 'free' && p.forever)) return;
+    if (p.loops >= 1) p.loops -= 1; else p.t = null;
+  }
+}
+function schedule() {
+  if (!ac || !running) return;
+  const now = ac.currentTime;
+  if (nextBar < now) nextBar = now + 0.05;       // after a pause or a background tab, carry on from now
+  while (nextBar < now + 0.6) { conductorBar(nextBar, barIdx); nextBar += barLen(); barIdx++; }
+  phones.forEach(p => { while (p.t !== null && p.t < now + 0.6) { if (p.t < now) p.t = now + 0.05; ringBar(p); } });
+}
+
+/* ---------- touching phones ---------- */
+function startRun() {
+  if (!ac) { initAudio(); nextBar = ac.currentTime + 0.2; timer = setInterval(schedule, 60); }
+  ac.resume(); running = true; started = true;
+  if (!startRun.once) { startRun.once = true; if (!selected) toggleInfo(false); }     // the card steps aside the first time; the info button brings it back
+  ui();
+}
+function startPhone(p) {                         // a tap rings an idle phone's own ringtone at once, on the nearest sixteenth of the beat
+  if (p.t !== null) return;
+  const now = ac.currentTime, e16 = barLen() / 16, g = nextBar - barLen();
+  p.t = g + Math.ceil((now + 0.03 - g) / e16) * e16; p.bi = 0; schedule();
+}
+function tapPhone(p) {
+  if (!running) startRun();
+  p.pulse = 1;
+  if (mode === 'free') { p.forever = !p.forever; if (p.forever) startPhone(p); return; }   // free play: a tap starts it, or lets it finish and stop
+  p.taps++; p.loops = Math.min(CAP, p.loops + 0.5);   // every two taps give one more round after the first
+  startPhone(p);
+}
+/* ---------- the bar, modes and speed ---------- */
+const bar = $('bar'), restartBtn = $('restartBtn'), modeBtn = $('modeBtn'), styleBtn = $('styleBtn'), soundBtn = $('soundBtn'), infoBtn = $('infoBtn'), infoBox = $('info'), ckEl = $('ck'), wxEl = $('wx');
+const svg = body => `<svg viewBox="0 0 24 24" aria-hidden="true">${body}</svg>`;
+const icons = {
+  play: svg('<path d="M8 5.5v13l11-6.5z" fill="currentColor" stroke="none"/>'),
+  pause: svg('<path d="M9 5.5v13M15 5.5v13" stroke-width="2.6"/>'),
+  restart: svg('<path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4.5v4.3h-4.3"/>'),
+  info: svg('<circle cx="12" cy="12" r="9"/><path d="M12 11v5.5"/><circle cx="12" cy="7.6" r=".7" fill="currentColor"/>'),
+  speed: svg('<path d="M4.5 17a8 8 0 1 1 15 0"/><path d="M12 16l3.6-4.8"/><circle cx="12" cy="16" r="1.1" fill="currentColor" stroke="none"/>'),
+  mode: {
+    charge: svg('<rect x="6" y="6" width="12" height="12" rx="2.5"/><path d="M10 10.5l1.5 2.5h1l1.5 2.5" /><path d="M12 3.5v2.5"/>'),
+    auto: svg('<path d="M6 7.5v10l8.5-5z" fill="currentColor" stroke="none"/><path d="M18.5 3.5v5M16 6h5"/>'),
+    free: svg('<circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="7.5"/>')
+  },
+  snd: [svg('<path d="M4 10v4h4l5 4V6L8 10z"/><path d="M16.5 9a4 4 0 0 1 0 6M19 6.5a7.5 7.5 0 0 1 0 11"/>'),
+        svg('<path d="M4 10v4h4l5 4V6L8 10z"/><path d="M16.5 9a4 4 0 0 1 0 6"/>'),
+        svg('<path d="M4 10v4h4l5 4V6L8 10z"/><path d="M17 9l5 6M22 9l-5 6"/>')]
+};
+const MODES = { charge: ['charge', 'Charge: tap to charge a phone; every two taps add a round'], auto: ['auto', 'Auto: a soft conductor brings the phones in'], free: ['free', 'Free: a tap starts or stops a phone'] };
+infoBtn.innerHTML = icons.info; restartBtn.innerHTML = icons.restart;
+function ui() {
+  modeBtn.innerHTML = running ? icons.pause : icons.play;
+  const lbl = running ? 'Pause' : (started ? 'Play' : 'Start');
+  modeBtn.setAttribute('aria-label', lbl); modeBtn.title = lbl + ' (Space)';
+  styleBtn.innerHTML = icons.mode[mode]; styleBtn.classList.toggle('on', mode !== 'charge');
+  styleBtn.setAttribute('aria-label', 'Mode: ' + MODES[mode][0]); styleBtn.title = 'Mode: ' + MODES[mode][1] + ' (M)';
+  soundBtn.innerHTML = icons.snd[levelIdx]; soundBtn.setAttribute('aria-label', 'Sound: ' + LEVELS[levelIdx][0]); soundBtn.title = 'Sound: ' + LEVELS[levelIdx][0] + ' (V)';
+  restartBtn.disabled = !started;                 // restart only acts once the hall has been played
+  wxEl.textContent = MODES[mode][0];
+}
+function togglePause() {
+  if (!running) { startRun(); return; }
+  running = false; if (ac) ac.suspend(); ui();
+}
+function cycleMode() {
+  const prev = mode; mode = mode === 'charge' ? 'auto' : mode === 'auto' ? 'free' : 'charge';
+  if (prev === 'free') phones.forEach(p => { if (p.forever) { p.forever = false; p.loops = Math.max(p.loops, 8); } });   // what was playing keeps playing a while
+  if (mode === 'auto') autoStart = barIdx;
+  ui();
+}
+function cycleSound() { levelIdx = (levelIdx + 1) % LEVELS.length; setLevel(); ui(); }
+function restart() {                              // a dark, silent hall again: charges, rounds and the conductor start over
+  if (!started) return;
+  phones.forEach(p => { p.loops = 0; p.taps = 0; p.forever = false; p.autoOn = false; p.t = null; p.bi = 0; p.playEnd = 0; });
+  q = []; barIdx = 0; autoStart = 0;
+  if (ac) nextBar = ac.currentTime + 0.2;
+  if (!running) startRun();
+}
+const speedBtn = $('speedBtn'), speedPop = $('speedPop'), spRange = $('spRange'), spVal = $('speedVal'), spChips = $('spChips');
+const PRESETS = [[0.5, '0.5×'], [0.75, '0.75×'], [1, '1×'], [1.25, '1.25×'], [1.5, '1.5×'], [2, '2×']];
+const posToSpeed = p => 0.5 * Math.pow(4, p / 1000), speedToPos = v => Math.log(v / 0.5) / Math.log(4) * 1000;
+speedBtn.innerHTML = icons.speed;
+spChips.innerHTML = PRESETS.map(([v, t]) => `<button type="button" data-v="${v}" title="Tempo ${t}">${t}</button>`).join('');
+function setSpeed(v) {
+  speed = clamp(Math.round(v * 100) / 100, 0.5, 2);
+  spRange.value = speedToPos(speed); spVal.textContent = +speed.toFixed(2) + '×';
+  spChips.querySelectorAll('button').forEach(b => b.classList.toggle('on', Math.abs(+b.dataset.v - speed) < 0.011));
+  speedBtn.setAttribute('aria-label', 'Tempo: ' + spVal.textContent); speedBtn.title = 'Tempo ' + spVal.textContent + ' ([ and ])';
+}
+function stepSpeed(dir) { const i = PRESETS.findIndex(([v]) => Math.abs(v - speed) < 0.011); const j = clamp((i < 0 ? PRESETS.findIndex(([v]) => v >= speed) : i) + dir, 0, PRESETS.length - 1); setSpeed(PRESETS[j][0]); }
+function toggleSpeed(open = !speedPop.classList.contains('open')) {
+  speedPop.classList.toggle('open', open); speedPop.setAttribute('aria-hidden', open ? 'false' : 'true'); speedBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+speedBtn.onclick = () => toggleSpeed();
+spRange.oninput = () => setSpeed(posToSpeed(+spRange.value));
+spChips.onclick = e => { if (e.target.dataset.v) setSpeed(+e.target.dataset.v); };
+document.addEventListener('pointerdown', e => { if (speedPop.classList.contains('open') && !speedPop.contains(e.target) && !speedBtn.contains(e.target)) toggleSpeed(false); });
+setSpeed(1);
+function toggleInfo(open = !infoBox.classList.contains('open')) {
+  infoBox.classList.toggle('open', open); infoBox.setAttribute('aria-hidden', open ? 'false' : 'true');
+  if (open) $('infoClose').focus({ preventScroll: true }); else { infoBtn.blur(); selectPhone(null); }
+}
+restartBtn.onclick = restart; modeBtn.onclick = togglePause; styleBtn.onclick = cycleMode; soundBtn.onclick = cycleSound;
+(function () {                                    // the info card (and the phone details under it) can be dragged anywhere by its body
+  let drag = false, sx = 0, sy = 0, x0 = 0, y0 = 0;
+  const place = (x, y) => { const r = infoBox.getBoundingClientRect(); infoBox.style.left = clamp(x, 8, Math.max(8, innerWidth - r.width - 8)) + 'px'; infoBox.style.top = clamp(y, 8, Math.max(8, innerHeight - r.height - 8)) + 'px'; };
+  infoBox.addEventListener('pointerdown', e => { if (e.target.closest('button')) return; const r = infoBox.getBoundingClientRect(); if (!infoBox.classList.contains('moved')) { infoBox.classList.add('moved'); infoBox.style.left = r.left + 'px'; infoBox.style.top = r.top + 'px'; } drag = true; x0 = r.left; y0 = r.top; sx = e.clientX; sy = e.clientY; infoBox.setPointerCapture(e.pointerId); infoBox.classList.add('drag'); });
+  infoBox.addEventListener('pointermove', e => { if (drag) place(x0 + e.clientX - sx, y0 + e.clientY - sy); });
+  const end = () => { drag = false; infoBox.classList.remove('drag'); };
+  infoBox.addEventListener('pointerup', end); infoBox.addEventListener('pointercancel', end);
+  addEventListener('resize', () => { if (infoBox.style.left) { const r = infoBox.getBoundingClientRect(); place(r.left, r.top); } });
+})();
+infoBtn.onclick = () => toggleInfo(); $('infoClose').onclick = () => toggleInfo(false);
+const themeBtn = $('themeBtn');                   // a tiny dark / light switch for the info panels (dark by default)
+const SUN = svg('<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/>'), MOON = svg('<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>');
+function setTheme(light, save) {
+  infoBox.classList.toggle('light', light); themeBtn.innerHTML = light ? MOON : SUN;
+  themeBtn.setAttribute('aria-label', light ? 'Dark mode' : 'Light mode'); themeBtn.title = light ? 'Dark mode' : 'Light mode';
+  if (save) { try { localStorage.setItem('lostTonesTheme', light ? 'light' : 'dark'); } catch (e) {} }
+}
+themeBtn.onclick = () => setTheme(!infoBox.classList.contains('light'), true);
+{ let t = null; try { t = localStorage.getItem('lostTonesTheme'); } catch (e) {} setTheme(t === 'light', false); }
+const barTab = $('barTab');                       // the bar opens and closes only with the arrow tab, so nothing rises into the music on its own
+const ARROW_UP = svg('<path d="M6 15l6-6 6 6"/>'), ARROW_DOWN = svg('<path d="M6 9l6 6 6-6"/>');
+function paintTab() { const up = bar.classList.contains('up'); barTab.classList.toggle('up', up); barTab.innerHTML = up ? ARROW_DOWN : ARROW_UP; barTab.setAttribute('aria-label', up ? 'Hide the controls' : 'Show the controls'); barTab.title = up ? 'Hide the controls' : 'Show the controls'; }
+const showBar = () => { bar.classList.add('up'); paintTab(); };
+function hideBarNow() { bar.classList.remove('up'); toggleSpeed(false); paintTab(); }
+barTab.onclick = () => { if (bar.classList.contains('up')) { hideBarNow(); barTab.blur(); } else showBar(); };
+paintTab();
+addEventListener('keydown', e => {
+  if (e.target.tagName === 'BUTTON' && e.key === ' ') return;
+  const k = e.key.toLowerCase();
+  if (e.key === ' ') { e.preventDefault(); togglePause(); }
+  else if (k === 'm') cycleMode();
+  else if (k === 'v') cycleSound();
+  else if (k === 'r') restart();
+  else if (k === '[') stepSpeed(-1);
+  else if (k === ']') stepSpeed(1);
+  else if (k === 'i') toggleInfo();
+  else if (k === 's') save();
+  else if (e.key === 'Escape') toggleInfo(false);
+});
+
+/* ---------- the gallery ---------- */
+const cv = $('c'), ctx = cv.getContext('2d');
+let W = 0, H = 0, dpr = 1, cols = 14, rows = 6, floorY = 0, bg = null, curL = null, curR = null;
+function rngSeed(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function size() {
+  W = innerWidth; H = innerHeight; dpr = Math.min(devicePixelRatio || 1, 2);
+  cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+  floorY = H * 0.955; buildBackdrop();
+}
+function targetBounds() {                          // when the info card is open the whole gallery moves aside to make room, and comes back when it closes
+  const land = W / H > 1.1; let L = W * (land ? 0.05 : 0.04), R = W - L;
+  if (infoBox.classList.contains('open')) {
+    const r = infoBox.getBoundingClientRect();
+    if (r.left + r.width / 2 < W / 2) { if (W - (r.right + 14) - L > W * 0.55) L = Math.max(L, r.right + 14); } else if (r.left - 14 - L > W * 0.55) R = Math.min(R, r.left - 14);
+  }
+  return [L, R];
+}
+function place(gx, gx2) {
+  const land = W / H > 1.1; cols = land ? 14 : 6; rows = Math.ceil(N / cols);
+  const gy0 = H * 0.085, gy1 = H * 0.935, cw = (gx2 - gx) / cols, ch = (gy1 - gy0) / rows;
+  const h = ch * 0.92, w = Math.min(cw * 0.88, h * 0.86);
+  phones.forEach(p => {
+    const r = Math.floor(p.i / cols), c = p.i % cols;
+    p.row = r; p.w = w; p.h = h;
+    p.cx = gx + cw * (c + 0.5); p.cy = gy0 + ch * (r + 0.5);
+    p.pillW = w * 0.6; p.pillY = p.cy + h / 2 - h * 0.085;
+    p.pan = clamp((p.cx / W - 0.5) * 1.6, -0.8, 0.8);
+    if (p.bus && p.bus.pan && Math.abs(p.bus.pan.value - p.pan) > 0.02) p.bus.pan.value = p.pan;
+  });
+}
+function layout() { size(); const [L, R] = targetBounds(); curL = L; curR = R; place(L, R); }
+function buildBackdrop() {                         // the white drywall wall, the skirting and a dark brown laminate floor, painted once
+  bg = document.createElement('canvas'); bg.width = W; bg.height = H; const g = bg.getContext('2d'), R = rngSeed(11), fy = Math.round(floorY), fh = H - fy;
+  const wall = g.createLinearGradient(0, 0, 0, fy); wall.addColorStop(0, '#f1eee8'); wall.addColorStop(1, '#e7e3da'); g.fillStyle = wall; g.fillRect(0, 0, W, fy);
+  for (let k = 0; k < 220; k++) {                  // slow, soft mottling like a painted board
+    const x = R() * W, y = R() * fy, r = 50 + R() * 190, light = R() < 0.5, rg = g.createRadialGradient(x, y, 0, x, y, r);
+    rg.addColorStop(0, light ? 'rgba(255,255,255,.22)' : 'rgba(150,138,120,.07)'); rg.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = rg; g.fillRect(x - r, y - r, r * 2, r * 2);
+  }
+  const id = g.getImageData(0, 0, W, fy), d = id.data;   // a very fine, even drywall grain
+  for (let i = 0; i < d.length; i += 4) { const n = (Math.random() - 0.5) * 7; d[i] += n; d[i + 1] += n; d[i + 2] += n * 0.9; }
+  g.putImageData(id, 0, 0);
+  for (let k = 0; k < 1400; k++) { g.fillStyle = R() < 0.55 ? 'rgba(120,108,92,.09)' : 'rgba(255,255,255,.35)'; g.beginPath(); g.arc(R() * W, R() * fy, 0.5 + R() * 0.9, 0, 6.2832); g.fill(); }
+  const vg = g.createLinearGradient(0, 0, W, 0); vg.addColorStop(0, 'rgba(110,98,84,.10)'); vg.addColorStop(0.12, 'rgba(110,98,84,0)'); vg.addColorStop(0.88, 'rgba(110,98,84,0)'); vg.addColorStop(1, 'rgba(110,98,84,.10)'); g.fillStyle = vg; g.fillRect(0, 0, W, fy);
+  g.save(); g.beginPath(); g.rect(0, fy, W, fh); g.clip();   // the floor: a dark wooden gradient with slanted seams that make long vertical panels, fanning toward the viewer
+  const fg = g.createLinearGradient(0, fy, 0, H); fg.addColorStop(0, '#5c4433'); fg.addColorStop(1, '#33241a'); g.fillStyle = fg; g.fillRect(0, fy, W, fh);
+  for (let x = 0, k = 0; x < W + 90; x += 90, k++) {
+    if (k % 2) { g.fillStyle = 'rgba(255, 225, 190, .035)'; g.beginPath(); g.moveTo(x, fy); g.lineTo(x + 90, fy); g.lineTo(x + 50, H); g.lineTo(x - 40, H); g.closePath(); g.fill(); }
+    g.strokeStyle = 'rgba(0, 0, 0, .32)'; g.lineWidth = 1; g.beginPath(); g.moveTo(x, fy); g.lineTo(x - 40, H); g.stroke();
+  }
+  const sheen = g.createLinearGradient(0, fy, 0, fy + fh * 0.7); sheen.addColorStop(0, 'rgba(255, 235, 210, .13)'); sheen.addColorStop(1, 'rgba(255, 235, 210, 0)'); g.fillStyle = sheen; g.fillRect(0, fy, W, fh);   // a polished sheen
+  const sh = g.createLinearGradient(0, fy, 0, fy + 12); sh.addColorStop(0, 'rgba(0,0,0,.5)'); sh.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = sh; g.fillRect(0, fy, W, 12);
+  g.restore();
+  g.fillStyle = '#f3f0ea'; g.fillRect(0, fy - 12, W, 12); g.fillStyle = 'rgba(0,0,0,.10)'; g.fillRect(0, fy - 12, W, 1); g.fillStyle = 'rgba(0,0,0,.18)'; g.fillRect(0, fy - 1, W, 1);   // the skirting board
+}
+function rrect(x, y, w, h, r) {
+  r = Math.min(r, w / 2, h / 2);
+  ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+}
+let cur = null, simT = 0;                          // the phone being drawn, and the gallery's own clock
+
+/* ---- drawing parts for the phones (units: a phone is about one unit tall) ---- */
+function decor(x, y, w, h) {
+  ctx.fillStyle = cur.trim;
+  if (cur.deco === 1) ctx.fillRect(x, y + h * 0.62, w, h * 0.045);
+  else if (cur.deco === 2) for (let k = 0; k < 3; k++) { ctx.beginPath(); ctx.arc(x + w * (0.3 + 0.2 * k), y + h * 0.045, Math.min(w, h) * 0.02, 0, 6.2832); ctx.fill(); }
+  else if (cur.deco === 3) ctx.fillRect(x + w * 0.84, y, w * 0.06, h);
+  else if (cur.deco === 5) ctx.fillRect(x, y + h * 0.56, w, h * 0.44);
+  else if (cur.deco === 4) { ctx.beginPath(); ctx.arc(x + w * 0.5, y + h * 0.955, w * 0.05, 0, 6.2832); ctx.fill(); }
+}
+function body(x, y, w, h, r, col) {
+  if (!col) r *= cur.rad;
+  rrect(x, y, w, h, r); ctx.fillStyle = col || cur.body; ctx.fill(); ctx.strokeStyle = 'rgba(0,0,0,.34)'; ctx.lineWidth = 0.014; ctx.stroke();
+  ctx.save(); rrect(x, y, w, h, r); ctx.clip(); ctx.fillStyle = 'rgba(255,255,255,.09)'; ctx.fillRect(x, y, w, h * 0.45); if (!col) decor(x, y, w, h); ctx.restore();
+}
+function poly(pts, col) { ctx.beginPath(); pts.forEach(([x, y], k) => k ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.closePath(); ctx.fillStyle = col || cur.body; ctx.fill(); ctx.strokeStyle = 'rgba(0,0,0,.34)'; ctx.lineWidth = 0.014; ctx.lineJoin = 'round'; ctx.stroke(); }
+function keyBase() { return cur.kt ? rgba(cur.trimRGB, 0.85) : cur.lum > 150 ? 'rgba(25,25,35,.38)' : 'rgba(255,255,255,.15)'; }
+function side(x, y, w, h) { ctx.fillStyle = cur.body2; ctx.fillRect(x - w / 2, y, w, h); ctx.strokeStyle = 'rgba(0,0,0,.3)'; ctx.lineWidth = 0.008; ctx.strokeRect(x - w / 2, y, w, h); }
+function screen(x, y, w, h, sty, r) {
+  r = r === undefined ? 0.02 : r; const lit = cur.glow, touch = sty === 'touch', led = sty === 'led';
+  if (!touch) { x += w * (1 - cur.sz) / 2; y += h * (1 - cur.sz) / 2; w *= cur.sz; h *= cur.sz; }
+  if (touch) { const wg = ctx.createLinearGradient(x, y, x + w, y + h); wg.addColorStop(0, shade(cur.trim, 0.3 + ((cur.i * 5) % 4) * 0.07)); wg.addColorStop(1, shade(cur.body, 0.18)); ctx.fillStyle = wg; }   // each touch phone has its own dark wallpaper
+  else ctx.fillStyle = led ? '#1a0a0a' : '#0c1311';
+  rrect(x, y, w, h, r); ctx.fill();
+  rrect(x, y, w, h, r); ctx.fillStyle = rgba(led ? [255, 80, 70] : cur.S.acc, (touch ? 0.1 : 0.16) + (touch ? 0.62 : 0.74) * lit); ctx.fill();
+  ctx.save(); rrect(x, y, w, h, r); ctx.clip(); ctx.fillStyle = 'rgba(8, 20, 16, .72)';
+  if (cur.on) {                                    // little bars that rise and fall with the notes
+    for (let k = 0; k < 4; k++) { const a = 0.22 + 0.5 * (0.5 + 0.5 * Math.sin(simT * 2.4 + k * 1.7 + cur.i)) * (0.35 + 0.65 * cur.pulse), bh = h * 0.7 * a; ctx.fillRect(x + w * (0.2 + k * 0.17), y + h * 0.85 - bh, w * 0.11, bh); }
+  } else if (cur.loops > 0) {                      // a battery that fills as it charges
+    const bw = w * 0.5, bh = Math.min(h * 0.34, bw * 0.55), bx = x + (w - bw) / 2 - w * 0.02, by = y + (h - bh) / 2, segs = Math.ceil(clamp(cur.loops, 0, 1) * 3 - 1e-6);
+    ctx.strokeStyle = 'rgba(8, 20, 16, .72)'; ctx.lineWidth = 0.014; rrect(bx, by, bw, bh, 0.01); ctx.stroke(); ctx.fillRect(bx + bw, by + bh * 0.3, w * 0.04, bh * 0.4);
+    for (let k = 0; k < segs; k++) ctx.fillRect(bx + bw * (0.08 + k * 0.3), by + bh * 0.16, bw * 0.24, bh * 0.68);
+  } else if (touch && lit < 0.2 && w > 0.2) {      // a quiet home screen of little app squares
+    ctx.fillStyle = rgba(cur.S.acc, 0.22);
+    for (let rr = 0; rr < 4; rr++) for (let c = 0; c < 3; c++) { rrect(x + w * (0.14 + c * 0.28), y + h * (0.12 + rr * 0.1), w * 0.18, h * 0.065, 0.012); ctx.fill(); }
+  }
+  ctx.restore();
+  if (cur.sb && !touch) { ctx.strokeStyle = cur.trim; ctx.lineWidth = 0.014; rrect(x, y, w, h, r); ctx.stroke(); }
+}
+function keys(x, y, nc, nr, kw, kh, gap) {
+  const base = keyBase(); kw *= cur.ks; kh *= cur.ks;
+  for (let r = 0; r < nr; r++) for (let c = 0; c < nc; c++) {
+    const kx = x + c * (kw + gap), ky = y + r * (kh + gap);
+    if (cur.kc === 1) { ctx.beginPath(); ctx.ellipse(kx + kw / 2, ky + kh / 2, kw / 2, kh / 2, 0, 0, 6.2832); } else rrect(kx, ky, kw, kh, cur.kc === 2 ? Math.min(kw, kh) / 2 : 0.012);
+    ctx.fillStyle = base; ctx.fill(); if (cur.glow > 0.02) { ctx.fillStyle = rgba(cur.S.acc, 0.55 * cur.glow); ctx.fill(); }
+  }
+}
+function nav(x, y, r) { ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832); ctx.fillStyle = keyBase(); ctx.fill(); ctx.fillStyle = rgba(cur.S.acc, 0.1 + 0.5 * cur.glow); ctx.beginPath(); ctx.arc(x, y, r * 0.55, 0, 6.2832); ctx.fill(); }
+function ant(x, y, len, kind) {
+  ctx.fillStyle = cur.body2;
+  if (kind === 'whip') { ctx.fillRect(x - 0.012, y - len, 0.024, len); ctx.beginPath(); ctx.arc(x, y - len, 0.03, 0, 6.2832); ctx.fill(); }
+  else if (kind === 'duck') { rrect(x - 0.035, y - len, 0.07, len + 0.02, 0.035); ctx.fill(); }
+  else if (kind === 'pop') { rrect(x - 0.03, y - len, 0.06, len + 0.02, 0.012); ctx.fill(); ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.fillRect(x - 0.03, y - len * 0.45, 0.06, 0.01); }
+  else { rrect(x - 0.02, y - len, 0.04, len + 0.02, 0.02); ctx.fill(); }
+}
+function lens(x, y, r) { ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832); ctx.fillStyle = '#0b0c10'; ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 0.008; ctx.stroke(); }
+function hinge(y) { ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(-0.12, y - 0.006, 0.24, 0.012); }
+
+/* ---- thirty-two shapes, 1983 to 2024: bricks, bars, flips, sliders, keyboards, touch slabs, notches and folding phones (all made-up, none a real model) ---- */
+function drawCase(p) {
+  const x = p.cx - p.w / 2, y = p.cy - p.h / 2, w = p.w, h = p.h, rr = Math.min(w, h) * 0.08, lit = clamp(p.glow * 0.6 + p.pulse * 0.1 * MOTION, 0, 1), dk = p.S.dk;
+  if (lit > 0.02) {                                // a soft coloured aura on the wall around a lit case
+    const R = Math.max(w, h) * 1.05, ag = ctx.createRadialGradient(p.cx, p.cy, h * 0.3, p.cx, p.cy, R); ag.addColorStop(0, rgba(p.S.acc, lit * 0.55)); ag.addColorStop(1, rgba(p.S.acc, 0));
+    ctx.fillStyle = ag; ctx.fillRect(p.cx - R, p.cy - R, R * 2, R * 2);
+  }
+  ctx.fillStyle = 'rgba(70, 60, 50, .09)'; rrect(x + 3, y + 6, w, h, rr); ctx.fill(); ctx.fillStyle = 'rgba(70, 60, 50, .08)'; rrect(x + 1.5, y + 3, w, h, rr); ctx.fill();   // the glass box's soft shadow on the wall
+  const gl = ctx.createLinearGradient(x, y, x + w, y + h); gl.addColorStop(0, 'rgba(205, 226, 240, .26)'); gl.addColorStop(0.5, 'rgba(235, 245, 250, .05)'); gl.addColorStop(1, 'rgba(195, 220, 236, .2)');
+  rrect(x, y, w, h, rr); ctx.fillStyle = gl; ctx.fill();
+  ctx.save(); rrect(x, y, w, h, rr); ctx.clip();
+  if (lit > 0.01) { const rg = ctx.createRadialGradient(p.cx, p.cy - h * 0.05, 0, p.cx, p.cy - h * 0.05, h * 0.8); rg.addColorStop(0, rgba(p.S.acc, lit * 0.7)); rg.addColorStop(1, rgba(p.S.acc, 0)); ctx.fillStyle = rg; ctx.fillRect(x, y, w, h); }
+  const A = ARCH[p.arch], bw = A.bw * p.vw, bh = (A.bot - A.top) * p.vh, U = Math.min(h * 0.74 / bh, w * 0.9 / bw) * (1 + 0.03 * p.pulse * MOTION), py = p.cy - h * 0.06;
+  ctx.save(); ctx.translate(p.cx, py + bh * U / 2 + 3); ctx.scale(1, 0.18); const sg = ctx.createRadialGradient(0, 0, 0, 0, 0, bw * U * 0.55); sg.addColorStop(0, 'rgba(40, 30, 20, .22)'); sg.addColorStop(1, 'rgba(40, 30, 20, 0)'); ctx.fillStyle = sg; ctx.fillRect(-bw * U, -bw * U, bw * U * 2, bw * U * 2); ctx.restore();
+  ctx.save(); ctx.translate(p.cx, py); ctx.scale(U, U); ctx.scale(p.flip * p.vw, p.vh); ctx.translate(0, -(A.top + A.bot) / 2);
+  cur = p; p.on = running && (p.forever || p.playEnd > (ac ? ac.currentTime : 0)); A.draw(); ctx.restore();
+  const sx = ctx.createLinearGradient(x, y, x + w * 0.9, y + h * 0.5); sx.addColorStop(0, 'rgba(255,255,255,.16)'); sx.addColorStop(1, 'rgba(255,255,255,0)');   // the glass: soft reflections
+  ctx.fillStyle = sx; ctx.beginPath(); ctx.moveTo(x + w * 0.12, y); ctx.lineTo(x + w * 0.36, y); ctx.lineTo(x, y + h * 0.42); ctx.lineTo(x, y + h * 0.2); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,.05)'; ctx.beginPath(); ctx.moveTo(x + w * 0.5, y); ctx.lineTo(x + w * 0.62, y); ctx.lineTo(x + w * 0.1, y + h); ctx.lineTo(x, y + h); ctx.lineTo(x, y + h * 0.9); ctx.closePath(); ctx.fill();
+  const full = p.forever || p.autoOn ? 1 : clamp(p.loops / CAP, 0, 1);                              // the charge: a small bar under the phone, and the way to its details
+  ctx.fillStyle = 'rgba(0,0,0,.14)'; rrect(p.cx - p.pillW / 2, p.pillY - 2, p.pillW, 4, 2); ctx.fill();
+  if (full > 0.001) { ctx.fillStyle = rgba(dk, 0.95); rrect(p.cx - p.pillW / 2, p.pillY - 2, Math.max(4, p.pillW * full), 4, 2); ctx.fill(); }
+  ctx.restore();
+  ctx.strokeStyle = 'rgba(105, 138, 156, .6)'; ctx.lineWidth = 1.4; rrect(x, y, w, h, rr); ctx.stroke();                 // clear glass edges: a cool outer line, a bright inner line, a darker lower edge
+  ctx.strokeStyle = 'rgba(255, 255, 255, .4)'; ctx.lineWidth = 1; rrect(x + 2, y + 2, w - 4, h - 4, Math.max(1, rr - 1)); ctx.stroke();
+  ctx.fillStyle = 'rgba(80, 120, 135, .28)'; ctx.fillRect(x + rr, y + h - 2, w - rr * 2, 2);
+  if (p === selected) { ctx.strokeStyle = rgba(dk, 1); ctx.lineWidth = 2.5; rrect(x - 2, y - 2, w + 4, h + 4, rr + 2); ctx.stroke(); }
+  else if (p.hover > 0.02) { ctx.strokeStyle = rgba(dk, 0.7 * p.hover); ctx.lineWidth = 2; rrect(x - 2, y - 2, w + 4, h + 4, rr + 2); ctx.stroke(); }
+}
+function drawGallery(E) {
+  ctx.drawImage(bg, 0, 0, W, H);
+  { const fh = H - floorY;                       // the polished floor catches the glow: each lit phone leaves a soft pool of its colour, the lower rows strongest
+    ctx.globalCompositeOperation = 'lighter';
+    phones.forEach(p => {
+      if (p.glow < 0.03) return;
+      const r = p.w * 1.1, k = 0.3 + 0.7 * p.row / Math.max(1, rows - 1), rg = ctx.createRadialGradient(0, 0, 0, 0, 0, r);
+      rg.addColorStop(0, rgba(p.S.acc, p.glow * 0.5 * k)); rg.addColorStop(1, rgba(p.S.acc, 0));
+      ctx.save(); ctx.translate(p.cx, floorY + fh * 0.4); ctx.scale(1, Math.max(0.1, fh * 0.6 / r)); ctx.fillStyle = rg; ctx.fillRect(-r, -r, r * 2, r * 2); ctx.restore();
+    });
+    ctx.globalCompositeOperation = 'source-over'; }
+  const trackH = H * 0.035, cw = (curR - curL) / cols, a0 = 0.03 + 0.1 * E;                          // track lights: a faint warm cone falls from each column
+  for (let c = 0; c < cols; c++) {
+    const x = phones[c].cx, cg = ctx.createLinearGradient(0, trackH, 0, floorY);
+    cg.addColorStop(0, `rgba(255, 226, 160, ${a0 * 1.6})`); cg.addColorStop(0.75, `rgba(255, 226, 160, ${a0 * 0.4})`); cg.addColorStop(1, 'rgba(255, 226, 160, 0)');
+    ctx.fillStyle = cg; ctx.beginPath(); ctx.moveTo(x - 5, trackH); ctx.lineTo(x + 5, trackH); ctx.lineTo(x + cw * 0.62, floorY); ctx.lineTo(x - cw * 0.62, floorY); ctx.closePath(); ctx.fill();
+  }
+  ctx.fillStyle = '#2b2620'; ctx.fillRect(0, 0, W, trackH);
+  for (let c = 0; c < cols; c++) { const x = phones[c].cx; ctx.fillStyle = '#17130f'; rrect(x - 6, trackH - 2, 12, 9, 3); ctx.fill(); ctx.fillStyle = `rgba(255, 238, 200, ${0.45 + 0.5 * E})`; ctx.fillRect(x - 3, trackH + 5, 6, 1.5); }
+  ctx.fillStyle = 'rgba(0, 0, 0, .07)'; ctx.fillRect(0, H * 0.047, W, 2);                         // a picture rail
+  phones.forEach(drawCase);
+}
+/* ---------- the details panel under the info card ---------- */
+const spec = $('spec'), spName = $('spName'), spSub = $('spSub'), spRows = $('spRows');
+function selectPhone(p) {
+  selected = p; spec.classList.toggle('on', !!p);
+  if (!p) return;
+  spName.textContent = NAMES[p.i % 12] + ' ' + (100 + (p.i * 37) % 900);
+  spSub.textContent = ARCH[p.arch].name + ', ' + ARCH[p.arch].y + '';
+  const bars = p.tune.nb + (p.tune.nb === 1 ? ' bar' : ' bars');
+  spRows.innerHTML = [['Era', ERA_NAMES[p.era]], ['Ringtone', p.tune.name], ['Riff', p.tune.ops.join(', ')], ['Sound', VTXT[p.voice]], ['Plays', 'D major, ' + bars + ' a round'], ['Screen', p.S.screen + ' backlight'], ['Charge', '<span id="spChg"></span>'], ['Mode', '<span id="spMode"></span>']]
+    .map(([k, v]) => '<div class="row"><b>' + k + '</b>' + v + '</div>').join('');
+  paintCharge();
+}
+function paintCharge() {
+  const c = $('spChg'), m = $('spMode'); if (!c || !m || !selected) return; const p = selected;
+  const pct = p.forever || p.autoOn ? 100 : Math.round(clamp(p.loops / CAP, 0, 1) * 100);
+  c.textContent = pct + '%';
+  m.textContent = p.forever ? 'Free play: playing until stopped' : p.autoOn ? 'Conductor: playing' : p.on ? (p.loops >= 1 ? 'Playing, with charge to spare' : 'Playing its last round') : p.loops >= 1 ? 'Charged, waiting for the next bar' : p.loops > 0 ? 'Warming up' : 'Silent';
+}
+$('specClose').onclick = () => selectPhone(null);
+/* ---------- frame loop ---------- */
+let last = 0, Eavg = 0, specT = 0;
+function frame(ts) {
+  const dt = Math.min(0.05, (ts - last) / 1000 || 0); last = ts;
+  const step = running ? dt : 0, now = ac ? ac.currentTime : 0;
+  simT += step;
+  { const [tL, tR] = targetBounds(), k = 1 - Math.exp(-dt * 7); if (curL === null) { curL = tL; curR = tR; } curL += (tL - curL) * k; curR += (tR - curR) * k; place(curL, curR); }
+  if (ac) q = q.filter(e => { if (e.t <= now) { e.p.pulse = Math.max(e.p.pulse, e.v); return false; } return true; });
+  let sum = 0, singing = 0;
+  phones.forEach(p => {
+    const on = running && (p.forever || p.playEnd > now), target = on ? 1 : clamp(p.loops, 0, 1) * 0.5;
+    p.glow += (target - p.glow) * (1 - Math.exp(-step * 2.2));
+    p.pulse *= Math.exp(-step * 3.5);
+    if (!on && p.loops < 1 && !p.forever && p.t === null) p.loops = Math.max(0, p.loops - step * 0.08);   // a half-charged phone slowly runs flat
+    p.hover += ((p.hovered ? 1 : 0) - p.hover) * (1 - Math.exp(-dt * 10));
+    sum += p.glow; if (on) singing++;
+  });
+  Eavg += (sum / N - Eavg) * (1 - Math.exp(-step * 1.5));
+  if (ac && padGain) padGain.gain.setTargetAtTime(running ? 0.004 + 0.05 * Eavg : 0, now, 0.8);
+  ckEl.textContent = String(singing).padStart(2, '0') + ' / ' + N;
+  if (selected && ++specT % 12 === 0) paintCharge();
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  drawGallery(Eavg);
+  requestAnimationFrame(frame);
+}
+function hit(px, py) { for (const p of phones) if (Math.abs(px - p.cx) < p.w / 2 + 3 && Math.abs(py - p.cy) < p.h / 2 + 3) return p; return null; }
+function hitPill(px, py) { for (const p of phones) if (Math.abs(px - p.cx) < p.pillW / 2 + 6 && Math.abs(py - p.pillY) < 7) return p; return null; }
+cv.addEventListener('pointerdown', e => {
+  const pl = hitPill(e.clientX, e.clientY);
+  if (pl) { selectPhone(pl); toggleInfo(true); return; }                 // the small bar opens the info card and the phone's details
+  const p = hit(e.clientX, e.clientY); if (p) { const follow = selected !== null; tapPhone(p); if (follow) selectPhone(p); }   // with the details open, a tap on a phone shows that phone's details too
+});
+addEventListener('pointermove', e => { if (e.pointerType !== 'mouse') return; const h = hitPill(e.clientX, e.clientY) || hit(e.clientX, e.clientY); phones.forEach(p => p.hovered = p === h); cv.style.cursor = h ? 'pointer' : 'default'; });
+function save() { cv.toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'lost-ringtones.png'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }); }
+let rzT = 0; addEventListener('resize', () => { clearTimeout(rzT); rzT = setTimeout(layout, 120); });
+layout(); ui(); toggleInfo(true);
+window.__lr = { ARCH, phones, get mode() { return mode; }, get running() { return running; }, get barIdx() { return barIdx; }, get ac() { return ac; }, autoCount };
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
