@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 240" role="img" aria-labelledby="t d">
+  <title id="t">Iqrar AI Art</title>
+  <desc id="d">Interactive and generative art made with AI, shown as a row of small phone shapes on a warm gallery wall.</desc>
+  <rect width="1200" height="240" fill="#e9e5dc"/>
+  <g fill="#1b1721">
+    <text x="64" y="112" font-family="Georgia, 'Times New Roman', serif" font-size="56" font-weight="500">Iqrar AI Art</text>
+    <text x="64" y="160" font-family="Georgia, 'Times New Roman', serif" font-size="24" font-style="italic" opacity="0.8">Interactive and generative art, made with AI</text>
+  </g>
+  <g>
+    <rect x="800" y="52" width="46" height="96" rx="9" fill="#a855f7"/>
+    <rect x="864" y="68" width="46" height="96" rx="9" fill="#f59e0b"/>
+    <rect x="928" y="40" width="46" height="96" rx="9" fill="#22c55e"/>
+    <rect x="992" y="76" width="46" height="96" rx="9" fill="#ec4899"/>
+    <rect x="1056" y="48" width="46" height="96" rx="9" fill="#3b82f6"/>
+    <g fill="#1b1721" opacity="0.55">
+      <rect x="808" y="62" width="30" height="22" rx="3"/>
+      <rect x="872" y="78" width="30" height="22" rx="3"/>
+      <rect x="936" y="50" width="30" height="22" rx="3"/>
+      <rect x="1000" y="86" width="30" height="22" rx="3"/>
+      <rect x="1064" y="58" width="30" height="22" rx="3"/>
+    </g>
+  </g>
+</svg>

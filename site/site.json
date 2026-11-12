@@ -1,0 +1,54 @@
+{
+  "name": "Iqrar AI Art",
+  "theme": "stageshow",
+  "intro": "Interactive and generative art made with AI. Concepts and direction by Iqrar Rizvi, code and sound by Claude.",
+  "repo": "https://github.com/rizvihiqrar/iqrar-ai-art",
+  "footerNote": "Copyright 2026 Iqrar Rizvi. All rights reserved.",
+  "contact": {
+    "email": "iqrar.h.rizvi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/iqrar-rizvi",
+    "instagram": "https://www.instagram.com/iqrar.rizvi.ai/",
+    "x": "https://x.com/iqrar_rizvi_ai"
+  },
+  "include": [
+    "^pieces$",
+    "^docs$"
+  ],
+  "nav": [
+    {
+      "label": "About",
+      "href": "docs/about.html"
+    }
+  ],
+  "sectionId": "pieces",
+  "sectionTitle": "Pieces",
+  "aboutButton": "About",
+  "aboutHref": "docs/about.html",
+  "copy": [
+    "lost-tones",
+    "lost-ringtones"
+  ],
+  "cards": [
+    {
+      "label": "Interactive Piece",
+      "title": "Lost Tones",
+      "path": "pieces/01-lost-tones.md",
+      "image": "docs/assets/previews/01-lost-tones.png",
+      "imageAlt": "Lost Tones: a gallery wall of eighty-four made-up phones, from a 1983 brick to today's folding phones.",
+      "tags": [
+        "Interactive",
+        "Sound"
+      ],
+      "summary": "A quiet gallery wall of eighty-four made-up phones, each with its own ringtone.",
+      "button": "View Piece",
+      "visual": "docs/assets/previews/01-lost-tones.png",
+      "visualAlt": "Lost Tones: a gallery wall of eighty-four made-up phones, from a 1983 brick to today's folding phones.",
+      "oneLiner": "Eighty-four made-up phones on a gallery wall, from a 1983 brick to the folding phones of today. Tap one and it rings its own ringtone.",
+      "facts": [
+        "2026, best on a desktop browser with the sound on"
+      ]
+    }
+  ],
+  "siteUrl": "https://rizvihiqrar.github.io/iqrar-ai-art/",
+  "owner": "Iqrar Rizvi"
+}
